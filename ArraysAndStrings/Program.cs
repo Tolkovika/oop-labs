@@ -15,7 +15,23 @@ string[] names = {
 void PrintGroups(string[] t, int perLine)
 {
 
-    // Write required code.
+    if (t == null || t.Length == 0 || perLine <= 0) return;
+
+    for (int i = 0; i < t.Length; i++)
+    {
+        Console.Write(t[i]);
+
+        // separator: przecinek+spacja, a dla ostatniego elementu kropka
+        if (i == t.Length - 1)
+            Console.Write(".");
+        else
+            Console.Write(", ");
+
+        // łamanie wiersza po każdej grupie 'perLine' (oprócz po ostatnim elemencie)
+        if ((i + 1) % perLine == 0 && i != t.Length - 1)
+    Console.WriteLine();
+}
+
 
 }
 
@@ -25,12 +41,32 @@ void PrintGroups(string[] t, int perLine)
 // Columns should be separated by "| ".
 // If element is too long it should be trimmed.
 
-void PrintColumns(string[] t, int perLine, int width)
+
+   void PrintColumns(string[] t, int perLine, int width)
 {
+    if (t == null || perLine <= 0 || width <= 0) return;
 
-    // Write required code.
+    int n = t.Length;
+    int rows = (int)Math.Ceiling(n / (double)perLine);
 
+    int idx = 0;
+    for (int r = 0; r < rows; r++)
+    {
+        for (int c = 0; c < perLine; c++)
+        {
+            string cell = idx < n ? t[idx] : string.Empty;
+            if (cell.Length > width) cell = cell.Substring(0, width);
+            else cell = cell.PadRight(width);
+
+            Console.Write(cell);
+            if (c < perLine - 1) Console.Write("| ");
+
+            idx++;
+        }
+        Console.WriteLine();
+    }
 }
+
 
 
 // Test how your functions work. 
