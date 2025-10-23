@@ -70,5 +70,27 @@ public class Creature
 
         return s;
     }
+    // Jeden ruch
+public void Go(Direction dir)
+{
+    string dirWord = dir.ToString().ToLowerInvariant(); // "left" itp.
+    Console.WriteLine($"{Name} goes {dirWord}.");
+}
+
+// Sekwencja ruchów
+public void Go(Direction[] directions)
+{
+    if (directions is null) return;
+    foreach (var d in directions)
+        Go(d);
+}
+
+// Wersja string – używa DirectionParser
+public void Go(string pattern)
+{
+    var dirs = DirectionParser.Parse(pattern);
+    Go(dirs);
+}
+
 }
 

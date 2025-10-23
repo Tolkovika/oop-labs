@@ -361,3 +361,12 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+#macOS files
+*.DS_Store
+.AppleDouble
+.LSOverride
+
+# VS code settings and workspace files
+.vscode/*
+*.code-workspace
