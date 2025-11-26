@@ -18,7 +18,19 @@ public class Animals
 
     public uint Size { get; set; } = 3;
 
-    public string Info => $"{Description} <{Size}>";
+    /// <summary>
+    /// Virtual Info property - can be overridden by derived classes
+    /// Format: Description <Size>
+    /// </summary>
+    public virtual string Info => $"{Description} <{Size}>";
+
+    /// <summary>
+    /// Returns string representation in format: ANIMALS: Info
+    /// </summary>
+    public override string ToString()
+    {
+        return $"{GetType().Name.ToUpper()}: {Info}";
+    }
 
     private static string Normalize(string? input)
     {
@@ -28,10 +40,10 @@ public class Animals
         // Use Validator.Shortener for length validation (min: 3, max: 15, placeholder: '#')
         s = Validator.Shortener(s, 3, 15, '#');
 
-        // Capitalize first letter if it's a lowercase letter
-        if (s.Length > 0 && char.IsLetter(s[0]) && char.IsLower(s[0]))
+        // Capitalize first letter, rest lowercase
+        if (s.Length > 0 && char.IsLetter(s[0]))
         {
-            s = char.ToUpperInvariant(s[0]) + s[1..];
+            s = char.ToUpperInvariant(s[0]) + s.Substring(1).ToLowerInvariant();
         }
 
         return s;

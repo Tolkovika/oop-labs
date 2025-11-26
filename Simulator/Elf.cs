@@ -60,4 +60,9 @@ public class Elf : Creature
     /// Power calculation: 8 * Level + 2 * Agility
     /// </summary>
     public override int Power => 8 * Level + 2 * Agility;
+
+    /// <summary>
+    /// Info string in format: Name [Level][Agility]
+    /// </summary>
+    public override string Info => $"{Name} [{Level}][{Agility}]";
 }

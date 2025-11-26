@@ -11,7 +11,16 @@ public abstract class Creature
     public string Name
     {
         get => _name;
-        set => _name = Validator.Shortener(value?.Trim() ?? "", 3, 25, '#');
+        set
+        {
+            string validated = Validator.Shortener(value?.Trim() ?? "", 3, 25, '#');
+            // Capitalize first letter if it's a letter
+            if (validated.Length > 0 && char.IsLetter(validated[0]))
+            {
+                validated = char.ToUpperInvariant(validated[0]) + validated.Substring(1);
+            }
+            _name = validated;
+        }
     }
 
     public int Level
@@ -42,9 +51,17 @@ public abstract class Creature
     public abstract int Power { get; }
 
     /// <summary>
-    /// Info string for the creature
+    /// Abstract Info property - must be implemented by derived classes
     /// </summary>
-    public string Info => $"{Name} <{Level}>";
+    public abstract string Info { get; }
+
+    /// <summary>
+    /// Returns string representation in format: CLASSNAME: Info
+    /// </summary>
+    public override string ToString()
+    {
+        return $"{GetType().Name.ToUpper()}: {Info}";
+    }
 
     /// <summary>
     /// Upgrade creature's level (max 10)

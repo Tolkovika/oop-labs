@@ -60,4 +60,9 @@ public class Orc : Creature
     /// Power calculation: 7 * Level + 3 * Rage
     /// </summary>
     public override int Power => 7 * Level + 3 * Rage;
+
+    /// <summary>
+    /// Info string in format: Name [Level][Rage]
+    /// </summary>
+    public override string Info => $"{Name} [{Level}][{Rage}]";
 }
