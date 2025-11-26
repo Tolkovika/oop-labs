@@ -1,96 +1,31 @@
 namespace Simulator;
 
-public class Creature
+/// <summary>
+/// Abstract base class for all creatures
+/// </summary>
+public abstract class Creature
 {
-    private string _name = "Unknown";
-    private bool _nameSetOnce = false;
+    public string Name { get; set; }
+    public int Level { get; set; }
 
-    private int? _level = null;
-    private bool _levelSetOnce = false;
-
-    public string Name
-    {
-        get => _name;
-        set
-        {
-            if (_nameSetOnce) return;
-            _name = Normalize(value, maxLen: 25);
-            _nameSetOnce = true;
-        }
-    }
-
-    public int Level
-    {
-        get => _level ?? 1;
-        set
-        {
-            if (_levelSetOnce) return;
-            int v = value;
-            if (v < 1) v = 1;
-            if (v > 10) v = 10;
-            _level = v;
-            _levelSetOnce = true;
-        }
-    }
-
-    public Creature(string name, int level = 1)
+    /// <summary>
+    /// Constructor for Creature
+    /// </summary>
+    /// <param name="name">Name of the creature</param>
+    /// <param name="level">Level of the creature</param>
+    public Creature(string name, int level)
     {
         Name = name;
-        // klucz: NIE wywołujemy settera, gdy level == 1 (domyślna wartość)
-        // dzięki temu initializer { Level = 7 } może się jeszcze wykonać „raz przy inicjacji”
-        if (level != 1)
-            Level = level;
+        Level = level;
     }
 
-    public Creature() { }
+    /// <summary>
+    /// Abstract method for creature to say hi
+    /// </summary>
+    public abstract void SayHi();
 
-    public void SayHi() =>
-        Console.WriteLine($"Hi! I'm {Name}, level {Level} creature.");
-
-    public string Info => $"{Name} <{Level}>";
-
-    public void Upgrade()
-    {
-        if (_level is null) _level = 1;
-        if (_level < 10) _level++;
-    }
-
-    private static string Normalize(string? input, int maxLen)
-    {
-        string s = (input ?? string.Empty).Trim();
-
-        if (s.Length > maxLen)
-            s = s[..maxLen].TrimEnd();
-
-        if (s.Length < 3)
-            s = s.PadRight(3, '#');
-
-        if (s.Length > 0 && char.IsLetter(s[0]) && char.IsLower(s[0]))
-            s = char.ToUpperInvariant(s[0]) + s[1..];
-
-        return s;
-    }
-    // Jeden ruch
-public void Go(Direction dir)
-{
-    string dirWord = dir.ToString().ToLowerInvariant(); // "left" itp.
-    Console.WriteLine($"{Name} goes {dirWord}.");
+    /// <summary>
+    /// Abstract property for creature's power
+    /// </summary>
+    public abstract int Power { get; }
 }
-
-// Sekwencja ruchów
-public void Go(Direction[] directions)
-{
-    if (directions is null) return;
-    foreach (var d in directions)
-        Go(d);
-}
-
-// Wersja string – używa DirectionParser
-public void Go(string pattern)
-{
-    var dirs = DirectionParser.Parse(pattern);
-    Go(dirs);
-}
-
-}
-
