@@ -14,7 +14,7 @@ public class Elf : Creature
     public int Agility
     {
         get => _agility;
-        init => _agility = Clamp(value, 0, 10);
+        init => _agility = Validator.Limiter(value, 0, 10);
     }
 
     /// <summary>
@@ -33,7 +33,7 @@ public class Elf : Creature
     /// <param name="agility">Agility of the elf (default: 0, clamped 0-10)</param>
     public Elf(string name, int level = 1, int agility = 0) : base(name, level)
     {
-        _agility = Clamp(agility, 0, 10);
+        _agility = Validator.Limiter(agility, 0, 10);
     }
 
     /// <summary>
@@ -52,10 +52,7 @@ public class Elf : Creature
         _singCounter++;
         if (_singCounter % 3 == 0)
         {
-            if (_agility < 10)
-            {
-                _agility++;
-            }
+            _agility = Validator.Limiter(_agility + 1, 0, 10);
         }
     }
 
@@ -63,14 +60,4 @@ public class Elf : Creature
     /// Power calculation: 8 * Level + 2 * Agility
     /// </summary>
     public override int Power => 8 * Level + 2 * Agility;
-
-    /// <summary>
-    /// Clamps a value between min and max
-    /// </summary>
-    private static int Clamp(int value, int min, int max)
-    {
-        if (value < min) return min;
-        if (value > max) return max;
-        return value;
-    }
 }

@@ -14,7 +14,7 @@ public class Orc : Creature
     public int Rage
     {
         get => _rage;
-        init => _rage = Clamp(value, 0, 10);
+        init => _rage = Validator.Limiter(value, 0, 10);
     }
 
     /// <summary>
@@ -33,7 +33,7 @@ public class Orc : Creature
     /// <param name="rage">Rage of the orc (default: 0, clamped 0-10)</param>
     public Orc(string name, int level = 1, int rage = 0) : base(name, level)
     {
-        _rage = Clamp(rage, 0, 10);
+        _rage = Validator.Limiter(rage, 0, 10);
     }
 
     /// <summary>
@@ -52,10 +52,7 @@ public class Orc : Creature
         _huntCounter++;
         if (_huntCounter % 2 == 0)
         {
-            if (_rage < 10)
-            {
-                _rage++;
-            }
+            _rage = Validator.Limiter(_rage + 1, 0, 10);
         }
     }
 
@@ -63,14 +60,4 @@ public class Orc : Creature
     /// Power calculation: 7 * Level + 3 * Rage
     /// </summary>
     public override int Power => 7 * Level + 3 * Rage;
-
-    /// <summary>
-    /// Clamps a value between min and max
-    /// </summary>
-    private static int Clamp(int value, int min, int max)
-    {
-        if (value < min) return min;
-        if (value > max) return max;
-        return value;
-    }
 }
