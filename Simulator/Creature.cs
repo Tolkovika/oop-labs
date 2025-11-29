@@ -41,9 +41,9 @@ public abstract class Creature
     }
 
     /// <summary>
-    /// Abstract method for creature to say hi
+    /// Abstract method for creature greeting
     /// </summary>
-    public abstract void SayHi();
+    public abstract string Greeting();
 
     /// <summary>
     /// Abstract property for creature's power

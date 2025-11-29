@@ -37,11 +37,11 @@ public class Elf : Creature
     }
 
     /// <summary>
-    /// Override SayHi to present elf with agility
+    /// Override Greeting to present elf with agility
     /// </summary>
-    public override void SayHi()
+    public override string Greeting()
     {
-        Console.WriteLine($"Hi! I'm {Name}, my level is {Level}, my agility is {Agility}.");
+        return $"Hi! I'm {Name}, my level is {Level}, my agility is {Agility}.";
     }
 
     /// <summary>

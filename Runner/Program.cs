@@ -1,4 +1,6 @@
-﻿namespace Simulator;
+﻿using Simulator;
+
+namespace Runner;
 
 internal static class Program
 {
@@ -20,20 +22,20 @@ internal static class Program
     {
         Console.WriteLine("HUNT TEST\n");
         var o = new Orc() { Name = "Gorbag", Rage = 7 };
-        o.SayHi();
+        Console.WriteLine(o.Greeting());
         for (int i = 0; i < 10; i++)
         {
             o.Hunt();
-            o.SayHi();
+            Console.WriteLine(o.Greeting());
         }
 
         Console.WriteLine("\nSING TEST\n");
         var e = new Elf("Legolas", agility: 2);
-        e.SayHi();
+        Console.WriteLine(e.Greeting());
         for (int i = 0; i < 10; i++)
         {
             e.Sing();
-            e.SayHi();
+            Console.WriteLine(e.Greeting());
         }
 
         Console.WriteLine("\nPOWER TEST\n");
@@ -55,27 +57,27 @@ internal static class Program
 
         // Test Elf with various names and levels (using Validator in Creature base class)
         var e1 = new Elf() { Name = "Shrek", Level = 20 };
-        e1.SayHi();
+        Console.WriteLine(e1.Greeting());
         e1.Upgrade();
         Console.WriteLine(e1.Info);
 
         var e2 = new Elf("  ", -5);  // Empty name, negative level
-        e2.SayHi();
+        Console.WriteLine(e2.Greeting());
         e2.Upgrade();
         Console.WriteLine(e2.Info);
 
         var e3 = new Elf("  donkey ") { Level = 7 };  // Trimmed name
-        e3.SayHi();
+        Console.WriteLine(e3.Greeting());
         e3.Upgrade();
         Console.WriteLine(e3.Info);
 
         var e4 = new Elf("Puss in Boots – a clever and brave cat.");  // Long name
-        e4.SayHi();
+        Console.WriteLine(e4.Greeting());
         e4.Upgrade();
         Console.WriteLine(e4.Info);
 
         var o1 = new Orc("a troll name", 5);
-        o1.SayHi();
+        Console.WriteLine(o1.Greeting());
         o1.Upgrade();
         Console.WriteLine(o1.Info);
 

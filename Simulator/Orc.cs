@@ -37,11 +37,11 @@ public class Orc : Creature
     }
 
     /// <summary>
-    /// Override SayHi to present orc with rage
+    /// Override Greeting to present orc with rage
     /// </summary>
-    public override void SayHi()
+    public override string Greeting()
     {
-        Console.WriteLine($"Hi! I'm {Name}, my level is {Level}, my rage is {Rage}.");
+        return $"Hi! I'm {Name}, my level is {Level}, my rage is {Rage}.";
     }
 
     /// <summary>
