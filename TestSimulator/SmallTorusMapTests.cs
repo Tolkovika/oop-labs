@@ -13,7 +13,8 @@ public class SmallTorusMapTests
         // Act
         var map = new SmallTorusMap(size);
         // Assert
-        Assert.Equal(size, map.Size);
+        Assert.Equal(size, map.SizeX);
+        Assert.Equal(size, map.SizeY);
     }
 
     [Theory]
@@ -42,10 +43,12 @@ public class SmallTorusMapTests
     }
 
     [Theory]
-    [InlineData(5, 10, Direction.Up, 5, 11)]
-    [InlineData(0, 0, Direction.Down, 0, 19)]
-    [InlineData(0, 8, Direction.Left, 19, 8)]
-    [InlineData(19, 10, Direction.Right, 0, 10)]
+    [InlineData(5, 10, Direction.Up, 5, 9)]    // Up: Y-1, wraps from 0→19
+    [InlineData(5, 0, Direction.Up, 5, 19)]    // Up at Y=0 wraps to Y=19
+    [InlineData(5, 10, Direction.Down, 5, 11)] // Down: Y+1
+    [InlineData(5, 19, Direction.Down, 5, 0)]  // Down at Y=19 wraps to Y=0
+    [InlineData(0, 8, Direction.Left, 19, 8)]  // Left: X-1, wraps from 0→19
+    [InlineData(19, 10, Direction.Right, 0, 10)] // Right: X+1, wraps from 19→0
     public void Next_ShouldReturnCorrectNextPoint(int x, int y,
         Direction direction, int expectedX, int expectedY)
     {
@@ -59,10 +62,11 @@ public class SmallTorusMapTests
     }
 
     [Theory]
-    [InlineData(5, 10, Direction.Up, 6, 11)]
-    [InlineData(0, 0, Direction.Down, 19, 19)]
-    [InlineData(0, 8, Direction.Left, 19, 9)]
-    [InlineData(19, 10, Direction.Right, 0, 9)]
+    [InlineData(5, 10, Direction.Up, 6, 9)]     // Up diagonal: X+1, Y-1
+    [InlineData(5, 0, Direction.Up, 6, 19)]     // Up diagonal at Y=0 wraps Y to 19
+    [InlineData(5, 10, Direction.Down, 4, 11)]  // Down diagonal: X-1, Y+1
+    [InlineData(0, 8, Direction.Left, 19, 7)]   // Left diagonal: X-1 (wraps), Y-1
+    [InlineData(19, 10, Direction.Right, 0, 11)] // Right diagonal: X+1 (wraps), Y+1
     public void NextDiagonal_ShouldReturnCorrectNextPoint(int x, int y,
         Direction direction, int expectedX, int expectedY)
     {
