@@ -1,0 +1,97 @@
+using Simulator;
+using Simulator.Maps;
+
+namespace SimConsole;
+
+/// <summary>
+/// Visualizes the state of a map in console using box-drawing characters.
+/// </summary>
+public class MapVisualizer
+{
+    private readonly Map _map;
+
+    /// <summary>
+    /// Creates a new MapVisualizer for the specified map.
+    /// </summary>
+    /// <param name="map">Map to visualize.</param>
+    /// <exception cref="ArgumentNullException">Thrown when map is null.</exception>
+    public MapVisualizer(Map map)
+    {
+        _map = map ?? throw new ArgumentNullException(nameof(map));
+    }
+
+    /// <summary>
+    /// Draws the current state of the map with creatures.
+    /// Clears console and renders:
+    /// - Box border using Unicode characters
+    /// - Empty cells as '.'
+    /// - Single creature using its Symbol property (E for Elf, O for Orc)
+    /// - Multiple creatures on same cell as 'X'
+    /// </summary>
+    public void Draw()
+    {
+        Console.Clear();
+        DrawTopBorder();
+        
+        // Draw each row of the map
+        for (int y = 0; y < _map.SizeY; y++)
+        {
+            Console.Write(Box.Vertical);
+            
+            // Draw each column in current row
+            for (int x = 0; x < _map.SizeX; x++)
+            {
+                Console.Write(GetSymbolAt(x, y));
+            }
+            
+            Console.WriteLine(Box.Vertical);
+        }
+        
+        DrawBottomBorder();
+    }
+
+    /// <summary>
+    /// Draws the top border of the map.
+    /// Format: ┌─────┐
+    /// </summary>
+    private void DrawTopBorder()
+    {
+        Console.Write(Box.TopLeft);
+        Console.Write(new string(Box.Horizontal, _map.SizeX));
+        Console.WriteLine(Box.TopRight);
+    }
+
+    /// <summary>
+    /// Draws the bottom border of the map.
+    /// Format: └─────┘
+    /// </summary>
+    private void DrawBottomBorder()
+    {
+        Console.Write(Box.BottomLeft);
+        Console.Write(new string(Box.Horizontal, _map.SizeX));
+        Console.WriteLine(Box.BottomRight);
+    }
+
+    /// <summary>
+    /// Gets the symbol to display at the specified position.
+    /// </summary>
+    /// <param name="x">X coordinate.</param>
+    /// <param name="y">Y coordinate.</param>
+    /// <returns>
+    /// '.' if no creatures,
+    /// creature.Symbol if exactly one creature (E or O),
+    /// 'X' if multiple creatures.
+    /// </returns>
+    private char GetSymbolAt(int x, int y)
+    {
+        var creatures = _map.At(x, y);
+        
+        if (creatures.Count == 0) 
+            return '.';
+        
+        if (creatures.Count == 1) 
+            return creatures[0].Symbol;
+        
+        return 'X'; // Multiple creatures
+    }
+}
