@@ -84,14 +84,14 @@ public class MapVisualizer
     /// </returns>
     private char GetSymbolAt(int x, int y)
     {
-        var creatures = _map.At(x, y);
+        var mappables = _map.At(x, y);
         
-        if (creatures.Count == 0) 
+        if (mappables.Count == 0) 
             return '.';
         
-        if (creatures.Count == 1) 
-            return creatures[0].Symbol;
+        if (mappables.Count == 1) 
+            return mappables[0].Symbol;
         
-        return 'X'; // Multiple creatures
+        return 'X'; // Multiple objects
     }
 }

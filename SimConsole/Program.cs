@@ -28,7 +28,8 @@ List<Point> points =
 ];
 string moves = "dlrludl";
 
-Simulation simulation = new(map, creatures, points, moves);
+// Create simulation with IMappable list (cast from Creature list)
+Simulation simulation = new(map, creatures.Cast<IMappable>().ToList(), points, moves);
 MapVisualizer visualizer = new(simulation.Map);
 
 // Display initial state
@@ -56,12 +57,13 @@ while (!simulation.Finished)
     Console.WriteLine($"╚════════════════════════════════╝");
     Console.WriteLine();
     
-    // Show current creature info (if not finished)
+    // Show current mappable info (if not finished)
     if (!simulation.Finished)
     {
         try
         {
-            Console.WriteLine($"Next creature: {simulation.CurrentCreature.Name}");
+            var current = simulation.CurrentMappable as Creature;
+            Console.WriteLine($"Next creature: {current?.Name ?? "Unknown"}");
             Console.WriteLine($"Next move: {simulation.CurrentMoveName}");
         }
         catch (InvalidOperationException)
@@ -95,7 +97,7 @@ while (!simulation.Finished)
 // Simulation complete
 Console.WriteLine();
 Console.WriteLine("╔════════════════════════════════╗");
-Console.WriteLine("║   Simulation Complete!         ║");
+Console.WriteLine("║     Simulation Complete!       ║");
 Console.WriteLine("╚════════════════════════════════╝");
 Console.WriteLine();
 Console.WriteLine("Press any key to exit...");
