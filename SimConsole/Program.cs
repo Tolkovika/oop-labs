@@ -13,9 +13,10 @@ Console.WriteLine("║      SIMULATOR - Menu              ║");
 Console.WriteLine("╠════════════════════════════════════╣");
 Console.WriteLine("║  1. Sim1 - Creatures (Orc & Elf)   ║");
 Console.WriteLine("║  2. Sim2 - Animals & Creatures     ║");
+Console.WriteLine("║  3. Sim3 - History (turns 5,10,15,20)║");
 Console.WriteLine("╚════════════════════════════════════╝");
 Console.WriteLine();
-Console.Write("Select simulation (1 or 2): ");
+Console.Write("Select simulation (1, 2 or 3): ");
 
 var key = Console.ReadKey();
 Console.WriteLine();
@@ -28,6 +29,10 @@ if (key.KeyChar == '1')
 else if (key.KeyChar == '2')
 {
     Sim2();
+}
+else if (key.KeyChar == '3')
+{
+    Sim3();
 }
 else
 {
@@ -176,6 +181,78 @@ void RunSimulation(Map map, List<IMappable> mappables, List<Point> positions, st
     Console.WriteLine();
     Console.WriteLine("╔════════════════════════════════╗");
     Console.WriteLine("║     Simulation Complete!       ║");
+    Console.WriteLine("╚════════════════════════════════╝");
+    Console.WriteLine();
+    Console.WriteLine("Press any key to exit...");
+    Console.ReadKey(true);
+}
+
+/// <summary>
+/// History simulation using LogVisualizer.
+/// Uses same setup as Sim2 but displays only turns 5, 10, 15, 20.
+/// </summary>
+void Sim3()
+{
+    // Setup same as Sim2
+    SmallTorusMap map = new(8, 6);
+    
+    List<IMappable> mappables =
+    [
+        new Elf("Legolas"),
+        new Orc("Gorbag"),
+        new Animals { Description = "Rabbits", Size = 5 },
+        new Birds { Description = "Eagles", Size = 3, CanFly = true },
+        new Birds { Description = "Ostriches", Size = 4, CanFly = false }
+    ];
+    
+    List<Point> points =
+    [
+        new(1, 1),  // Elf
+        new(5, 4),  // Orc
+        new(3, 2),  // Rabbits
+        new(6, 0),  // Eagles
+        new(0, 5)   // Ostriches
+    ];
+    
+    string moves = "urdlurdlurdlurdlurdl"; // 20 moves
+
+    // Create simulation and history
+    Simulation simulation = new(map, mappables, points, moves);
+    SimulationLog history = new(simulation);
+    LogVisualizer visualizer = new(history);
+
+    // Hide cursor
+    Console.CursorVisible = false;
+
+    // Display selected turns: 5, 10, 15, 20
+    int[] turnsToShow = [5, 10, 15, 20];
+
+    foreach (int turn in turnsToShow)
+    {
+        Console.Clear();
+        Console.WriteLine("╔════════════════════════════════╗");
+        Console.WriteLine($"║   Turn {turn,-2} (from history)      ║");
+        Console.WriteLine("╚════════════════════════════════╝");
+        Console.WriteLine();
+
+        var turnLog = history.TurnLogs[turn];
+        Console.WriteLine($"Mappable: {turnLog.Mappable}");
+        Console.WriteLine($"Move: {turnLog.Move}");
+        Console.WriteLine();
+
+        visualizer.Draw(turn);
+        Console.WriteLine();
+
+        Console.WriteLine("Press any key for next turn...");
+        Console.ReadKey(true);
+    }
+
+    // Restore cursor
+    Console.CursorVisible = true;
+
+    Console.WriteLine();
+    Console.WriteLine("╔════════════════════════════════╗");
+    Console.WriteLine("║   History Replay Complete!     ║");
     Console.WriteLine("╚════════════════════════════════╝");
     Console.WriteLine();
     Console.WriteLine("Press any key to exit...");

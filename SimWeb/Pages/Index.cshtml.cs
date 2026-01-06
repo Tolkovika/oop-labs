@@ -11,7 +11,10 @@ public class IndexModel : PageModel
     private readonly SimulationService _simulationService;
 
     public Simulation? Simulation => _simulationService.Simulation;
+    public SimulationLog? SimulationLog => _simulationService.SimulationLog;
     public int CurrentSimType => _simulationService.CurrentSimType;
+    public int CurrentHistoryTurn => _simulationService.CurrentHistoryTurn;
+    public int[] HistoryTurns => SimulationService.HistoryTurns;
     
     public string CurrentMove { get; private set; } = "";
     public string CurrentMappable { get; private set; } = "";
@@ -23,7 +26,7 @@ public class IndexModel : PageModel
 
     public void OnGet()
     {
-        if (Simulation != null)
+        if (Simulation != null && CurrentSimType != 3)
         {
             UpdateState();
         }
@@ -41,6 +44,12 @@ public class IndexModel : PageModel
         return RedirectToPage();
     }
 
+    public IActionResult OnPostSim3()
+    {
+        _simulationService.SetupSim3();
+        return RedirectToPage();
+    }
+
     public IActionResult OnPostNext()
     {
         _simulationService.NextTurn();
@@ -50,6 +59,12 @@ public class IndexModel : PageModel
     public IActionResult OnPostReset()
     {
         _simulationService.Reset();
+        return RedirectToPage();
+    }
+
+    public IActionResult OnPostHistoryTurn(int turn)
+    {
+        _simulationService.SetHistoryTurn(turn);
         return RedirectToPage();
     }
     
@@ -76,5 +91,31 @@ public class IndexModel : PageModel
         if (mappable is Birds b) return b.CanFly ? "🦅" : "🪶";
         if (mappable is Animals) return "🐰";
         return "❓";
+    }
+
+    public string GetEmojiForSymbol(char symbol)
+    {
+        return symbol switch
+        {
+            'E' => "🧝",
+            'O' => "👹",
+            'A' => "🐰",
+            'B' => "🦅",
+            'b' => "🪶",
+            'X' => "❌",
+            _ => "❓"
+        };
+    }
+
+    public string GetHistorySymbolAt(int turnIndex, int x, int y)
+    {
+        if (SimulationLog == null) return "";
+        var turnLog = SimulationLog.TurnLogs[turnIndex];
+        var point = new Point(x, y);
+        if (turnLog.Symbols.TryGetValue(point, out char symbol))
+        {
+            return GetEmojiForSymbol(symbol);
+        }
+        return "";
     }
 }
