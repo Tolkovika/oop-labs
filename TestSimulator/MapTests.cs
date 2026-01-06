@@ -246,9 +246,9 @@ public class MapTests
         var creatures = map.At(position);
 
         // Assert
-        Assert.IsAssignableFrom<IReadOnlyList<Creature>>(creatures);
-        // Verify it's truly read-only - should not be castable to List<Creature>
-        Assert.False(creatures is List<Creature>);
+        Assert.IsAssignableFrom<IReadOnlyList<IMappable>>(creatures);
+        // Verify it's truly read-only - should not be castable to List<IMappable>
+        Assert.False(creatures is List<IMappable>);
     }
 
     #endregion

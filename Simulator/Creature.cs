@@ -3,9 +3,10 @@ using Simulator.Maps;
 namespace Simulator;
 
 /// <summary>
-/// Abstract base class for all creatures
+/// Abstract base class for all creatures.
+/// Implements IMappable to allow placement on maps.
 /// </summary>
-public abstract class Creature
+public abstract class Creature : IMappable
 {
     private string _name = "Unknown";
     private int _level = 1;
@@ -115,6 +116,11 @@ public abstract class Creature
     /// Abstract property for creature's power
     /// </summary>
     public abstract int Power { get; }
+
+    /// <summary>
+    /// Symbol representing the creature on map visualization.
+    /// </summary>
+    public abstract char Symbol { get; }
 
     /// <summary>
     /// Abstract Info property - must be implemented by derived classes

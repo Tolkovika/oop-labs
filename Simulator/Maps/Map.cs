@@ -7,7 +7,7 @@ namespace Simulator.Maps;
 /// </summary>
 public abstract class Map
 {
-    private readonly Dictionary<Point, List<Creature>> _creatures = new();
+    private readonly Dictionary<Point, List<IMappable>> _fields = new();
     private readonly Rectangle area;
 
     public readonly int SizeX;
@@ -59,18 +59,18 @@ public abstract class Map
     /// <returns>Next point.</returns>
     public abstract Point NextDiagonal(Point p, Direction d);
 
-    #region Creature Management
+    #region Mappable Object Management
 
     /// <summary>
-    /// Add a creature to the map at the specified position.
-    /// Multiple creatures can occupy the same position.
+    /// Add a mappable object to the map at the specified position.
+    /// Multiple objects can occupy the same position.
     /// </summary>
-    /// <param name="creature">Creature to add.</param>
-    /// <param name="position">Position where to place the creature.</param>
+    /// <param name="mappable">Object to add.</param>
+    /// <param name="position">Position where to place the object.</param>
     /// <exception cref="ArgumentException">
     /// Thrown when position is outside map bounds.
     /// </exception>
-    public void Add(Creature creature, Point position)
+    public void Add(IMappable mappable, Point position)
     {
         if (!Exist(position))
         {
@@ -79,49 +79,49 @@ public abstract class Map
                 nameof(position));
         }
 
-        if (!_creatures.ContainsKey(position))
+        if (!_fields.ContainsKey(position))
         {
-            _creatures[position] = new List<Creature>();
+            _fields[position] = new List<IMappable>();
         }
 
-        _creatures[position].Add(creature);
+        _fields[position].Add(mappable);
     }
 
     /// <summary>
-    /// Remove a creature from the specified position on the map.
+    /// Remove a mappable object from the specified position on the map.
     /// </summary>
-    /// <param name="creature">Creature to remove.</param>
-    /// <param name="position">Position from which to remove the creature.</param>
-    /// <returns>True if creature was found and removed, false otherwise.</returns>
-    public bool Remove(Creature creature, Point position)
+    /// <param name="mappable">Object to remove.</param>
+    /// <param name="position">Position from which to remove the object.</param>
+    /// <returns>True if object was found and removed, false otherwise.</returns>
+    public bool Remove(IMappable mappable, Point position)
     {
-        if (!_creatures.ContainsKey(position))
+        if (!_fields.ContainsKey(position))
         {
             return false;
         }
 
-        bool removed = _creatures[position].Remove(creature);
+        bool removed = _fields[position].Remove(mappable);
 
         // Clean up empty lists to save memory
-        if (_creatures[position].Count == 0)
+        if (_fields[position].Count == 0)
         {
-            _creatures.Remove(position);
+            _fields.Remove(position);
         }
 
         return removed;
     }
 
     /// <summary>
-    /// Move a creature from one position to another on the map.
+    /// Move a mappable object from one position to another on the map.
     /// This is an atomic operation - both remove and add succeed or neither does.
     /// </summary>
-    /// <param name="creature">Creature to move.</param>
-    /// <param name="oldPosition">Current position of the creature.</param>
-    /// <param name="newPosition">New position for the creature.</param>
+    /// <param name="mappable">Object to move.</param>
+    /// <param name="oldPosition">Current position of the object.</param>
+    /// <param name="newPosition">New position for the object.</param>
     /// <exception cref="ArgumentException">
-    /// Thrown when new position is outside map bounds or creature not at old position.
+    /// Thrown when new position is outside map bounds or object not at old position.
     /// </exception>
-    public void Move(Creature creature, Point oldPosition, Point newPosition)
+    public void Move(IMappable mappable, Point oldPosition, Point newPosition)
     {
         if (!Exist(newPosition))
         {
@@ -130,39 +130,39 @@ public abstract class Map
                 nameof(newPosition));
         }
 
-        if (!Remove(creature, oldPosition))
+        if (!Remove(mappable, oldPosition))
         {
             throw new ArgumentException(
-                $"Creature not found at position {oldPosition}", 
+                $"Object not found at position {oldPosition}", 
                 nameof(oldPosition));
         }
 
-        Add(creature, newPosition);
+        Add(mappable, newPosition);
     }
 
     /// <summary>
-    /// Get all creatures at the specified position.
-    /// Returns an empty read-only list if no creatures at that position.
+    /// Get all mappable objects at the specified position.
+    /// Returns an empty read-only list if no objects at that position.
     /// </summary>
     /// <param name="position">Position to query.</param>
-    /// <returns>Read-only list of creatures at the position.</returns>
-    public IReadOnlyList<Creature> At(Point position)
+    /// <returns>Read-only list of objects at the position.</returns>
+    public IReadOnlyList<IMappable> At(Point position)
     {
-        if (_creatures.ContainsKey(position))
+        if (_fields.ContainsKey(position))
         {
-            return _creatures[position].AsReadOnly();
+            return _fields[position].AsReadOnly();
         }
-        return new List<Creature>().AsReadOnly();
+        return new List<IMappable>().AsReadOnly();
     }
 
     /// <summary>
-    /// Get all creatures at the specified coordinates.
-    /// Returns an empty read-only list if no creatures at that position.
+    /// Get all mappable objects at the specified coordinates.
+    /// Returns an empty read-only list if no objects at that position.
     /// </summary>
     /// <param name="x">X coordinate.</param>
     /// <param name="y">Y coordinate.</param>
-    /// <returns>Read-only list of creatures at the position.</returns>
-    public IReadOnlyList<Creature> At(int x, int y)
+    /// <returns>Read-only list of objects at the position.</returns>
+    public IReadOnlyList<IMappable> At(int x, int y)
     {
         return At(new Point(x, y));
     }

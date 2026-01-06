@@ -1,6 +1,11 @@
+using Simulator.Maps;
+
 namespace Simulator;
 
-public class Animals
+/// <summary>
+/// Base class for all animals. Implements IMappable for map placement.
+/// </summary>
+public class Animals : IMappable
 {
     private string _description = string.Empty;
     private bool _descriptionSetOnce = false;
@@ -17,6 +22,65 @@ public class Animals
     }
 
     public uint Size { get; set; } = 3;
+
+    /// <summary>
+    /// Map on which the animal is located.
+    /// </summary>
+    public Map? Map { get; private set; }
+
+    /// <summary>
+    /// Current position of the animal on the map.
+    /// </summary>
+    public Point? Position { get; protected set; }
+
+    /// <summary>
+    /// Symbol representing the animal on map visualization.
+    /// </summary>
+    public virtual char Symbol => 'A';
+
+    /// <summary>
+    /// Initialize animal's map and position.
+    /// </summary>
+    public void InitMapAndPosition(Map map, Point position)
+    {
+        if (Map != null)
+        {
+            throw new InvalidOperationException(
+                $"Animal is already on a map at position {Position}");
+        }
+
+        if (!map.Exist(position))
+        {
+            throw new ArgumentException(
+                $"Position {position} is invalid for the map",
+                nameof(position));
+        }
+
+        Map = map;
+        Position = position;
+        map.Add(this, position);
+    }
+
+    /// <summary>
+    /// Move the animal in the specified direction.
+    /// Standard animals move one position.
+    /// </summary>
+    public virtual void Go(Direction direction)
+    {
+        if (Map == null || Position == null)
+        {
+            return;
+        }
+
+        Point currentPos = Position.Value;
+        Point newPos = Map.Next(currentPos, direction);
+
+        if (!newPos.Equals(currentPos))
+        {
+            Map.Move(this, currentPos, newPos);
+            Position = newPos;
+        }
+    }
 
     /// <summary>
     /// Virtual Info property - can be overridden by derived classes
@@ -49,3 +113,4 @@ public class Animals
         return s;
     }
 }
+

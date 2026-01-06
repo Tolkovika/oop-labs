@@ -62,6 +62,11 @@ public class Elf : Creature
     public override int Power => 8 * Level + 2 * Agility;
 
     /// <summary>
+    /// Symbol for map visualization.
+    /// </summary>
+    public override char Symbol => 'E';
+
+    /// <summary>
     /// Info string in format: Name [Level][Agility]
     /// </summary>
     public override string Info => $"{Name} [{Level}][{Agility}]";

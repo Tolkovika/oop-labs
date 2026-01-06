@@ -12,7 +12,7 @@ public class SimulationTests
     {
         // Arrange
         var map = new SmallSquareMap(10);
-        var emptyList = new List<Creature>();
+        var emptyList = new List<IMappable>();
         var positions = new List<Point>();
         
         // Act & Assert
@@ -38,7 +38,7 @@ public class SimulationTests
     {
         // Arrange
         var map = new SmallSquareMap(10);
-        var creatures = new List<Creature> 
+        var creatures = new List<IMappable> 
         { 
             new Elf("Legolas", 1), 
             new Orc("Azog", 1) 
@@ -58,7 +58,7 @@ public class SimulationTests
         var map = new SmallSquareMap(10);
         var elf = new Elf("Legolas", 1);
         var orc = new Orc("Azog", 1);
-        var creatures = new List<Creature> { elf, orc };
+        var creatures = new List<IMappable> { elf, orc };
         var positions = new List<Point> { new Point(3, 3), new Point(7, 7) };
         
         // Act
@@ -76,7 +76,7 @@ public class SimulationTests
     {
         // Arrange
         var map = new SmallSquareMap(10);
-        var creatures = new List<Creature> { new Elf("Elf", 1) };
+        var creatures = new List<IMappable> { new Elf("Elf", 1) };
         var positions = new List<Point> { new Point(5, 5) };
         
         // Act
@@ -91,7 +91,7 @@ public class SimulationTests
     {
         // Arrange
         var map = new SmallSquareMap(10);
-        var creatures = new List<Creature> { new Elf("Elf", 1) };
+        var creatures = new List<IMappable> { new Elf("Elf", 1) };
         var positions = new List<Point> { new Point(5, 5) };
         
         // Act
@@ -104,59 +104,59 @@ public class SimulationTests
 
     #endregion
 
-    #region CurrentCreature Tests
+    #region CurrentMappable Tests
 
     [Fact]
-    public void CurrentCreature_FirstTurn_ShouldReturnFirstCreature()
+    public void CurrentMappable_FirstTurn_ShouldReturnFirstCreature()
     {
         // Arrange
         var map = new SmallSquareMap(10);
         var elf = new Elf("Elf", 1);
         var orc = new Orc("Orc", 1);
-        var creatures = new List<Creature> { elf, orc };
+        var creatures = new List<IMappable> { elf, orc };
         var positions = new List<Point> { new Point(5, 5), new Point(6, 6) };
         
         // Act
         var sim = new Simulation(map, creatures, positions, "udlr");
         
         // Assert
-        Assert.Equal(elf, sim.CurrentCreature);
+        Assert.Equal(elf, sim.CurrentMappable);
     }
 
     [Fact]
-    public void CurrentCreature_CyclicDistribution_ShouldRotate()
+    public void CurrentMappable_CyclicDistribution_ShouldRotate()
     {
         // Arrange
         var map = new SmallSquareMap(10);
         var c1 = new Elf("E1", 1);
         var c2 = new Orc("O1", 1);
-        var creatures = new List<Creature> { c1, c2 };
+        var creatures = new List<IMappable> { c1, c2 };
         var positions = new List<Point> { new Point(5, 5), new Point(6, 6) };
         
         // Act
         var sim = new Simulation(map, creatures, positions, "udlr");
         
         // Assert
-        Assert.Equal(c1, sim.CurrentCreature); // Move 0 -> creature 0
+        Assert.Equal(c1, sim.CurrentMappable); // Move 0 -> creature 0
         sim.Turn();
-        Assert.Equal(c2, sim.CurrentCreature); // Move 1 -> creature 1
+        Assert.Equal(c2, sim.CurrentMappable); // Move 1 -> creature 1
         sim.Turn();
-        Assert.Equal(c1, sim.CurrentCreature); // Move 2 -> creature 0 (cyclic)
+        Assert.Equal(c1, sim.CurrentMappable); // Move 2 -> creature 0 (cyclic)
     }
 
     [Fact]
-    public void CurrentCreature_AfterFinished_ShouldThrowInvalidOperationException()
+    public void CurrentMappable_AfterFinished_ShouldThrowInvalidOperationException()
     {
         // Arrange
         var map = new SmallSquareMap(10);
-        var creatures = new List<Creature> { new Elf("Elf", 1) };
+        var creatures = new List<IMappable> { new Elf("Elf", 1) };
         var positions = new List<Point> { new Point(5, 5) };
         
         var sim = new Simulation(map, creatures, positions, "u");
         sim.Turn(); // Finishes simulation
         
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => sim.CurrentCreature);
+        Assert.Throws<InvalidOperationException>(() => sim.CurrentMappable);
     }
 
     #endregion
@@ -168,7 +168,7 @@ public class SimulationTests
     {
         // Arrange
         var map = new SmallSquareMap(10);
-        var creatures = new List<Creature> { new Elf("Elf", 1) };
+        var creatures = new List<IMappable> { new Elf("Elf", 1) };
         var positions = new List<Point> { new Point(5, 5) };
         
         // Act
@@ -185,7 +185,7 @@ public class SimulationTests
     {
         // Arrange
         var map = new SmallSquareMap(10);
-        var creatures = new List<Creature> { new Elf("Elf", 1) };
+        var creatures = new List<IMappable> { new Elf("Elf", 1) };
         var positions = new List<Point> { new Point(5, 5) };
         
         var sim = new Simulation(map, creatures, positions, "u");
@@ -205,7 +205,7 @@ public class SimulationTests
         // Arrange
         var map = new SmallSquareMap(10);
         var elf = new Elf("Elf", 1);
-        var creatures = new List<Creature> { elf };
+        var creatures = new List<IMappable> { elf };
         var positions = new List<Point> { new Point(5, 5) };
         
         var sim = new Simulation(map, creatures, positions, "u");
@@ -224,7 +224,7 @@ public class SimulationTests
         // Arrange
         var map = new SmallSquareMap(10);
         var elf = new Elf("Elf", 1);
-        var creatures = new List<Creature> { elf };
+        var creatures = new List<IMappable> { elf };
         var positions = new List<Point> { new Point(5, 5) };
         
         var sim = new Simulation(map, creatures, positions, "urdl");
@@ -254,7 +254,7 @@ public class SimulationTests
         // Arrange
         var map = new SmallSquareMap(10);
         var elf = new Elf("Elf", 1);
-        var creatures = new List<Creature> { elf };
+        var creatures = new List<IMappable> { elf };
         var positions = new List<Point> { new Point(5, 5) };
         
         var sim = new Simulation(map, creatures, positions, "xur"); // 'x' is invalid
@@ -276,7 +276,7 @@ public class SimulationTests
         // Arrange
         var map = new SmallSquareMap(10);
         var elf = new Elf("Elf", 1);
-        var creatures = new List<Creature> { elf };
+        var creatures = new List<IMappable> { elf };
         var positions = new List<Point> { new Point(5, 5) };
         
         var sim = new Simulation(map, creatures, positions, "xyz123");
@@ -298,7 +298,7 @@ public class SimulationTests
         // Arrange
         var map = new SmallSquareMap(10);
         var elf = new Elf("Elf", 1);
-        var creatures = new List<Creature> { elf };
+        var creatures = new List<IMappable> { elf };
         var positions = new List<Point> { new Point(5, 5) };
         
         var sim = new Simulation(map, creatures, positions, "u5xr3l");
@@ -333,7 +333,7 @@ public class SimulationTests
     {
         // Arrange
         var map = new SmallSquareMap(10);
-        var creatures = new List<Creature> { new Elf("Elf", 1) };
+        var creatures = new List<IMappable> { new Elf("Elf", 1) };
         var positions = new List<Point> { new Point(5, 5) };
         
         var sim = new Simulation(map, creatures, positions, "u");
@@ -348,7 +348,7 @@ public class SimulationTests
     {
         // Arrange
         var map = new SmallSquareMap(10);
-        var creatures = new List<Creature> { new Elf("Elf", 1) };
+        var creatures = new List<IMappable> { new Elf("Elf", 1) };
         var positions = new List<Point> { new Point(5, 5) };
         
         var sim = new Simulation(map, creatures, positions, "ud");
@@ -374,7 +374,7 @@ public class SimulationTests
         var map = new SmallSquareMap(10);
         var elf = new Elf("Elf", 1);
         var orc = new Orc("Orc", 1);
-        var creatures = new List<Creature> { elf, orc };
+        var creatures = new List<IMappable> { elf, orc };
         var positions = new List<Point> { new Point(5, 5), new Point(6, 6) };
         
         var sim = new Simulation(map, creatures, positions, "udlr");
@@ -410,7 +410,7 @@ public class SimulationTests
         var c1 = new Elf("E1", 1);
         var c2 = new Orc("O1", 1);
         var c3 = new Elf("E2", 1);
-        var creatures = new List<Creature> { c1, c2, c3 };
+        var creatures = new List<IMappable> { c1, c2, c3 };
         var positions = new List<Point> 
         { 
             new Point(3, 3), 
@@ -452,7 +452,7 @@ public class SimulationTests
         // Arrange
         var map = new SmallTorusMap(5);
         var elf = new Elf("Elf", 1);
-        var creatures = new List<Creature> { elf };
+        var creatures = new List<IMappable> { elf };
         var positions = new List<Point> { new Point(0, 0) };
         
         // Move left 3 times (wrapping torus)
@@ -478,7 +478,7 @@ public class SimulationTests
         // Arrange
         var map = new SmallSquareMap(10);
         var elf = new Elf("Elf", 1);
-        var creatures = new List<Creature> { elf };
+        var creatures = new List<IMappable> { elf };
         var positions = new List<Point> { new Point(0, 0) }; // Corner
         
         var sim = new Simulation(map, creatures, positions, "ulu"); // Try to go left+up

@@ -22,15 +22,15 @@ public class MapVisualizer
 
     /// <summary>
     /// Draws the current state of the map with creatures.
-    /// Clears console and renders:
+    /// Renders:
     /// - Box border using Unicode characters
     /// - Empty cells as '.'
     /// - Single creature using its Symbol property (E for Elf, O for Orc)
     /// - Multiple creatures on same cell as 'X'
+    /// Note: Does NOT clear the console - caller is responsible for clearing/positioning cursor.
     /// </summary>
     public void Draw()
     {
-        Console.Clear();
         DrawTopBorder();
         
         // Draw each row of the map

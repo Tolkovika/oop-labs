@@ -15,9 +15,9 @@ public class Simulation
     public Map Map { get; }
 
     /// <summary>
-    /// Creatures moving on the map.
+    /// Mappable objects moving on the map.
     /// </summary>
-    public List<Creature> Creatures { get; }
+    public List<IMappable> Mappables { get; }
 
     /// <summary>
     /// Starting positions of creatures.
@@ -39,17 +39,17 @@ public class Simulation
     public bool Finished { get; private set; } = false;
 
     /// <summary>
-    /// Creature which will be moving current turn.
+    /// Mappable object which will be moving current turn.
     /// Throws InvalidOperationException if simulation finished.
     /// </summary>
-    public Creature CurrentCreature
+    public IMappable CurrentMappable
     {
         get
         {
             if (Finished)
                 throw new InvalidOperationException("Simulation has finished");
             
-            return Creatures[_currentMoveIndex % Creatures.Count];
+            return Mappables[_currentMoveIndex % Mappables.Count];
         }
     }
 
@@ -70,34 +70,34 @@ public class Simulation
 
     /// <summary>
     /// Simulation constructor.
-    /// Places creatures on map at starting positions.
+    /// Places mappable objects on map at starting positions.
     /// </summary>
     /// <exception cref="ArgumentException">
-    /// Thrown when creatures list is empty or when number of creatures
+    /// Thrown when mappables list is empty or when number of mappables
     /// differs from number of starting positions.
     /// </exception>
-    public Simulation(Map map, List<Creature> creatures, 
+    public Simulation(Map map, List<IMappable> mappables, 
                       List<Point> positions, string moves)
     {
         // Validation
-        if (creatures == null || creatures.Count == 0)
+        if (mappables == null || mappables.Count == 0)
             throw new ArgumentException(
-                "Creatures list cannot be empty", nameof(creatures));
+                "Mappables list cannot be empty", nameof(mappables));
         
-        if (positions == null || creatures.Count != positions.Count)
+        if (positions == null || mappables.Count != positions.Count)
             throw new ArgumentException(
-                "Number of creatures must match number of positions");
+                "Number of mappables must match number of positions");
         
         // Assignment
         Map = map;
-        Creatures = creatures;
+        Mappables = mappables;
         Positions = positions;
         Moves = moves ?? "";
         
-        // Initialize creatures on map
-        for (int i = 0; i < creatures.Count; i++)
+        // Initialize mappables on map
+        for (int i = 0; i < mappables.Count; i++)
         {
-            creatures[i].InitMapAndPosition(map, positions[i]);
+            mappables[i].InitMapAndPosition(map, positions[i]);
         }
         
         // Check if no moves - simulation already finished
@@ -130,7 +130,7 @@ public class Simulation
         if (parsedDirections.Length > 0)
         {
             Direction direction = parsedDirections[0];
-            CurrentCreature.Go(direction);
+            CurrentMappable.Go(direction);
         }
         // Invalid moves are simply skipped (no else needed)
         

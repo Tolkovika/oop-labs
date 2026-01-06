@@ -62,6 +62,11 @@ public class Orc : Creature
     public override int Power => 7 * Level + 3 * Rage;
 
     /// <summary>
+    /// Symbol for map visualization.
+    /// </summary>
+    public override char Symbol => 'O';
+
+    /// <summary>
     /// Info string in format: Name [Level][Rage]
     /// </summary>
     public override string Info => $"{Name} [{Level}][{Rage}]";
