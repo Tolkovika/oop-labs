@@ -1,0 +1,121 @@
+@page
+@model SimulationModel
+@{
+    ViewData["Title"] = "Symulacja";
+    var sim = Model.Simulation;
+    var isDay = Model.Turn % 2 == 1;
+}
+
+@if (sim != null)
+{
+    <div class="app-content">
+        <!-- Left: Map Section -->
+        <div class="map-section @(isDay ? "" : "night-mode")">
+            <div class="map-container">
+                <div class="map-grid" style="grid-template-columns: repeat(@sim.Map.SizeX, var(--cell-size)); grid-template-rows: repeat(@sim.Map.SizeY, var(--cell-size));">
+                    @for (int y = sim.Map.SizeY - 1; y >= 0; y--)
+                    {
+                        @for (int x = 0; x < sim.Map.SizeX; x++)
+                        {
+                            var items = sim.Map.At(x, y);
+                            var terrainClass = Model.GetTerrainClass(x, y, sim.Map.SizeX, sim.Map.SizeY);
+                            var isWater = terrainClass == "terrain-water";
+                            <div class="map-cell @terrainClass">
+                                @foreach (var item in items)
+                                {
+                                    var src = Model.GetImageSrc(item);
+                                    var canFly = Model.CanFly(item);
+                                    if (!string.IsNullOrEmpty(src))
+                                    {
+                                        <img src="@src" class="unit-icon" alt="@item.ToString()" title="@item.ToString()" />
+                                        @if (isWater && !canFly)
+                                        {
+                                            <div class="death-marker" title="Utonął!"></div>
+                                        }
+                                    }
+                                }
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Side Panel -->
+        <aside class="side-panel">
+            <!-- Turn Display -->
+            <div class="panel-card turn-display">
+                <h3>Tura</h3>
+                <div class="turn-number">@Model.Turn</div>
+                <div class="turn-label">z @sim.Moves.Length</div>
+            </div>
+
+            <!-- Status Info -->
+            <div class="panel-card">
+                <h3>Status</h3>
+                <div class="status-row">
+                    <span class="status-label">Pora dnia</span>
+                    <span class="time-badge @(isDay ? "day" : "night")">
+                        @(isDay ? "☀️ Dzień" : "🌙 Noc")
+                    </span>
+                </div>
+                @if (!sim.Finished)
+                {
+                    <div class="status-row">
+                        <span class="status-label">Jednostka</span>
+                        <span class="status-value">@sim.CurrentMappable</span>
+                    </div>
+                    <div class="status-row">
+                        <span class="status-label">Kierunek</span>
+                        <span class="status-value">@Model.GetDirectionName(sim.CurrentMoveName)</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="simulation-finished">
+                        <span class="badge">Symulacja zakończona</span>
+                    </div>
+                }
+            </div>
+
+            <!-- Next Turn Button -->
+            <form method="post" asp-page-handler="Next" style="margin-bottom: 0.75rem;">
+                <button type="submit" class="btn-next-turn" @(sim.Finished ? "disabled" : "")>
+                    <span>Następna tura</span>
+                    <span class="arrow">▶</span>
+                </button>
+            </form>
+            
+            <!-- Reset Button -->
+            <form method="post" asp-page-handler="Reset">
+                <button type="submit" class="btn-reset">🔄 Resetuj symulację</button>
+            </form>
+
+            <!-- Event Log -->
+            <div class="panel-card log-section">
+                <h3>Dziennik zdarzeń</h3>
+                <div class="log-list">
+                    @foreach (var log in Model.EventLog.AsEnumerable().Reverse())
+                    {
+                        <div class="log-item @(log == Model.EventLog.LastOrDefault() ? "latest" : "")">
+                            <span class="turn-tag">[T@(log.Turn)]</span>
+                            @log.Message
+                        </div>
+                    }
+                    @if (!Model.EventLog.Any())
+                    {
+                        <div class="log-item">Brak zdarzeń</div>
+                    }
+                </div>
+            </div>
+        </aside>
+    </div>
+}
+else
+{
+    <div class="home-hero">
+        <h1>Błąd</h1>
+        <p class="subtitle">Symulacja nie została zainicjalizowana.</p>
+        <a asp-page="/Index" class="btn-start">Wróć do strony głównej</a>
+    </div>
+}

@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimConsole", "SimConsole\Si
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimWeb", "SimWeb\SimWeb.csproj", "{02132EF2-A98E-4636-9000-E1673C95392F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimCore", "SimCore\SimCore.csproj", "{3A4B1F73-2B1C-44C8-BBB4-E8254A548A92}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,18 @@ Global
 		{02132EF2-A98E-4636-9000-E1673C95392F}.Release|x64.Build.0 = Release|Any CPU
 		{02132EF2-A98E-4636-9000-E1673C95392F}.Release|x86.ActiveCfg = Release|Any CPU
 		{02132EF2-A98E-4636-9000-E1673C95392F}.Release|x86.Build.0 = Release|Any CPU
+		{3A4B1F73-2B1C-44C8-BBB4-E8254A548A92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A4B1F73-2B1C-44C8-BBB4-E8254A548A92}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A4B1F73-2B1C-44C8-BBB4-E8254A548A92}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3A4B1F73-2B1C-44C8-BBB4-E8254A548A92}.Debug|x64.Build.0 = Debug|Any CPU
+		{3A4B1F73-2B1C-44C8-BBB4-E8254A548A92}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3A4B1F73-2B1C-44C8-BBB4-E8254A548A92}.Debug|x86.Build.0 = Debug|Any CPU
+		{3A4B1F73-2B1C-44C8-BBB4-E8254A548A92}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A4B1F73-2B1C-44C8-BBB4-E8254A548A92}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3A4B1F73-2B1C-44C8-BBB4-E8254A548A92}.Release|x64.ActiveCfg = Release|Any CPU
+		{3A4B1F73-2B1C-44C8-BBB4-E8254A548A92}.Release|x64.Build.0 = Release|Any CPU
+		{3A4B1F73-2B1C-44C8-BBB4-E8254A548A92}.Release|x86.ActiveCfg = Release|Any CPU
+		{3A4B1F73-2B1C-44C8-BBB4-E8254A548A92}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
