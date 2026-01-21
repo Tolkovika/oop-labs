@@ -3,16 +3,15 @@
 @{
     ViewData["Title"] = "Symulacja";
     var sim = Model.Simulation;
-    var isDay = Model.Turn % 2 == 1;
 }
 
 @if (sim != null)
 {
     <div class="app-content">
         <!-- Left: Map Section -->
-        <div class="map-section @(isDay ? "" : "night-mode")">
+        <div class="map-section @(Model.IsDay ? "" : "night-mode")" id="map-section">
             <div class="map-container">
-                <div class="map-grid" style="grid-template-columns: repeat(@sim.Map.SizeX, var(--cell-size)); grid-template-rows: repeat(@sim.Map.SizeY, var(--cell-size));">
+                <div class="map-grid" id="map-grid" style="grid-template-columns: repeat(@sim.Map.SizeX, var(--cell-size)); grid-template-rows: repeat(@sim.Map.SizeY, var(--cell-size));">
                     @for (int y = sim.Map.SizeY - 1; y >= 0; y--)
                     {
                         @for (int x = 0; x < sim.Map.SizeX; x++)
@@ -20,7 +19,30 @@
                             var items = sim.Map.At(x, y);
                             var terrainClass = Model.GetTerrainClass(x, y, sim.Map.SizeX, sim.Map.SizeY);
                             var isWater = terrainClass == "terrain-water";
-                            <div class="map-cell @terrainClass">
+                            <div class="map-cell @terrainClass" data-x="@x" data-y="@y">
+                                @{
+                                    var pt = new Simulator.Point(x, y);
+                                    var carrots = sim.Map.GetCarrots(pt);
+                                    var feathers = sim.Map.GetFeathers(pt);
+                                    var dust = sim.Map.GetDust(pt);
+                                    var footprints = sim.Map.GetFootprints(pt);
+                                }
+                                @if (carrots > 0)
+                                {
+                                    <div class="carrot-badge" title="🥕 @carrots">@carrots</div>
+                                }
+                                @if (feathers > 0)
+                                {
+                                    <div class="feather-badge" title="🪶 @feathers">@feathers</div>
+                                }
+                                @if (dust > 0)
+                                {
+                                    <div class="dust-badge" title="🌫️ @dust">@dust</div>
+                                }
+                                @if (footprints > 0)
+                                {
+                                    <div class="footprints-badge" title="👣 @footprints">@footprints</div>
+                                }
                                 @foreach (var item in items)
                                 {
                                     var src = Model.GetImageSrc(item);
@@ -46,7 +68,7 @@
             <!-- Turn Display -->
             <div class="panel-card turn-display">
                 <h3>Tura</h3>
-                <div class="turn-number">@Model.Turn</div>
+                <div class="turn-number" id="turn-number">@Model.Turn</div>
                 <div class="turn-label">z @sim.Moves.Length</div>
             </div>
 
@@ -55,19 +77,19 @@
                 <h3>Status</h3>
                 <div class="status-row">
                     <span class="status-label">Pora dnia</span>
-                    <span class="time-badge @(isDay ? "day" : "night")">
-                        @(isDay ? "☀️ Dzień" : "🌙 Noc")
+                    <span class="time-badge @(Model.IsDay ? "day" : "night")" id="time-badge">
+                        @(Model.IsDay ? "☀️ Dzień" : "🌙 Noc")
                     </span>
                 </div>
                 @if (!sim.Finished)
                 {
                     <div class="status-row">
                         <span class="status-label">Jednostka</span>
-                        <span class="status-value">@sim.CurrentMappable</span>
+                        <span class="status-value" id="current-unit">@sim.CurrentMappable</span>
                     </div>
                     <div class="status-row">
                         <span class="status-label">Kierunek</span>
-                        <span class="status-value">@Model.GetDirectionName(sim.CurrentMoveName)</span>
+                        <span class="status-value" id="current-direction">@Model.GetDirectionName(sim.CurrentMoveName)</span>
                     </div>
                 }
                 else
@@ -76,31 +98,51 @@
                         <span class="badge">Symulacja zakończona</span>
                     </div>
                 }
+                @{
+                    var elf = sim.Mappables.OfType<Simulator.Elf>().FirstOrDefault();
+                    var rabbit = sim.Mappables.OfType<Simulator.Animals>().FirstOrDefault(a => a.IsRabbit);
+                }
+                @if (elf != null)
+                {
+                    <div class="status-row">
+                        <span class="status-label">🥕 Elf marchewki</span>
+                        <span class="status-value" id="elf-carrots" style="color: #f97316;">@elf.CarrotsCarried</span>
+                    </div>
+                }
+                @if (rabbit != null)
+                {
+                    <div class="status-row">
+                        <span class="status-label">🐰 Królik zapasy</span>
+                        <span class="status-value" id="rabbit-carrots" style="color: #a855f7;">@rabbit.Carrots</span>
+                    </div>
+                }
             </div>
 
+            <!-- Auto Play Button -->
+            <button type="button" class="btn-auto-play" id="btn-auto" @(sim.Finished ? "disabled" : "")>
+                <span id="auto-text">▶ Auto-Play</span>
+            </button>
+
             <!-- Next Turn Button -->
-            <form method="post" asp-page-handler="Next" style="margin-bottom: 0.75rem;">
-                <button type="submit" class="btn-next-turn" @(sim.Finished ? "disabled" : "")>
+            <form method="post" asp-page-handler="Next" style="margin-bottom: 0.75rem;" id="next-form">
+                <button type="submit" class="btn-next-turn" id="btn-next" @(sim.Finished ? "disabled" : "")>
                     <span>Następna tura</span>
                     <span class="arrow">▶</span>
                 </button>
             </form>
             
             <!-- Reset Button -->
-            <form method="post" asp-page-handler="Reset">
+            <form method="post" asp-page-handler="Reset" style="margin-top: 0.5rem;">
                 <button type="submit" class="btn-reset">🔄 Resetuj symulację</button>
             </form>
 
             <!-- Event Log -->
             <div class="panel-card log-section">
                 <h3>Dziennik zdarzeń</h3>
-                <div class="log-list">
-                    @foreach (var log in Model.EventLog.AsEnumerable().Reverse())
+                <div class="log-list" id="event-log">
+                    @foreach (var log in Model.EventLog.AsEnumerable().Reverse().Take(10))
                     {
-                        <div class="log-item @(log == Model.EventLog.LastOrDefault() ? "latest" : "")">
-                            <span class="turn-tag">[T@(log.Turn)]</span>
-                            @log.Message
-                        </div>
+                        <div class="log-item">@log</div>
                     }
                     @if (!Model.EventLog.Any())
                     {
@@ -110,6 +152,174 @@
             </div>
         </aside>
     </div>
+    
+    <script>
+        // Image mapping for unit types
+        const unitImages = {
+            'Elf': '/images/elf.png',
+            'Orc': '/images/orc.png',
+            'Animals': '/images/rabbit.png',
+            'Birds': '/images/eagle.png'
+        };
+        
+        // Get terrain class (same logic as server-side)
+        function getTerrainClass(x, y, sizeX, sizeY) {
+            if (x === 4) return 'terrain-water';
+            if ((x === 0 && y === sizeY - 1) || (x === 0 && y === sizeY - 2) ||
+                (x === 1 && y === sizeY - 1) ||
+                (x === sizeX - 1 && y === 0) || (x === sizeX - 2 && y === 0) ||
+                (x === sizeX - 1 && y === 1))
+                return 'terrain-forest';
+            if (x === sizeX - 1 && y >= sizeY - 3)
+                return 'terrain-mountain';
+            if (x === 3 || x === 5)
+                return 'terrain-sand';
+            return 'terrain-grass';
+        }
+        
+        // Update map from API response
+        function updateMap(data) {
+            const grid = document.getElementById('map-grid');
+            const cells = grid.querySelectorAll('.map-cell');
+            
+            // Clear all units and badges from cells
+            cells.forEach(cell => {
+                cell.querySelectorAll('.unit-icon, .carrot-badge, .feather-badge, .dust-badge, .footprints-badge').forEach(u => u.remove());
+            });
+            
+            // Add units from data
+            data.cells.forEach(cellData => {
+                if (cellData.units && cellData.units.length > 0) {
+                    // Find the cell element (cells are rendered Y descending)
+                    const cellIndex = (data.sizeY - 1 - cellData.y) * data.sizeX + cellData.x;
+                    const cell = cells[cellIndex];
+                    
+                    if (cell) {
+                        // Add units
+                        cellData.units.forEach(unit => {
+                            const img = document.createElement('img');
+                            img.className = 'unit-icon';
+                            img.alt = unit.name;
+                            img.title = unit.name;
+                            
+                            if (unit.type === 'Elf') img.src = '/images/elf.png';
+                            else if (unit.type === 'Orc') img.src = '/images/orc.png';
+                            else if (unit.name.includes('Rabbit')) img.src = '/images/rabbit.png';
+                            else if (unit.name.includes('Eagle')) img.src = '/images/eagle.png';
+                            else if (unit.name.includes('Ostrich')) img.src = '/images/ostrich.png';
+                            else img.src = '/images/orc.png';
+                            
+                            cell.appendChild(img);
+                        });
+
+                        // Add resource badges
+                        if (cellData.carrots > 0) updateBadge(cell, 'carrot-badge', '🥕 ' + cellData.carrots, cellData.carrots);
+                        if (cellData.feathers > 0) updateBadge(cell, 'feather-badge', '🪶 ' + cellData.feathers, cellData.feathers);
+                        if (cellData.dust > 0) updateBadge(cell, 'dust-badge', '🌫️ ' + cellData.dust, cellData.dust);
+                        if (cellData.footprints > 0) updateBadge(cell, 'footprints-badge', '👣 ' + cellData.footprints, cellData.footprints);
+                    }
+                }
+            });
+
+            function updateBadge(cell, className, title, count) {
+                const badge = document.createElement('div');
+                badge.className = className;
+                badge.title = title;
+                badge.textContent = count;
+                cell.appendChild(badge);
+            }
+            
+            // Update turn number
+            document.getElementById('turn-number').textContent = data.turn;
+            
+            // Update day/night
+            const mapSection = document.getElementById('map-section');
+            const timeBadge = document.getElementById('time-badge');
+            if (data.isDay) {
+                mapSection.classList.remove('night-mode');
+                timeBadge.textContent = '☀️ Dzień';
+                timeBadge.classList.remove('night');
+                timeBadge.classList.add('day');
+            } else {
+                mapSection.classList.add('night-mode');
+                timeBadge.textContent = '🌙 Noc';
+                timeBadge.classList.remove('day');
+                timeBadge.classList.add('night');
+            }
+            
+            // Update event log
+            const logList = document.getElementById('event-log');
+            logList.innerHTML = data.events.map(e => `<div class="log-item">${e}</div>`).join('');
+            
+            // Check if finished
+            if (data.finished) {
+                document.getElementById('btn-auto').disabled = true;
+                document.getElementById('btn-next').disabled = true;
+                stopAutoPlay();
+            }
+        }
+        
+        // Auto-play functionality
+        let autoPlayInterval = null;
+        const btnAuto = document.getElementById('btn-auto');
+        const autoText = document.getElementById('auto-text');
+        
+        function stopAutoPlay() {
+            if (autoPlayInterval) {
+                clearInterval(autoPlayInterval);
+                autoPlayInterval = null;
+                autoText.textContent = '▶ Auto-Play';
+                btnAuto.classList.remove('playing');
+            }
+        }
+        
+        async function advanceTurn() {
+            try {
+                const response = await fetch('/api/nextTurn', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.error) {
+                    console.error('API Error:', data.error);
+                    stopAutoPlay();
+                    return false;
+                }
+                
+                updateMap(data);
+                return !data.finished;
+            } catch (err) {
+                console.error('Fetch error:', err);
+                stopAutoPlay();
+                return false;
+            }
+        }
+        
+        btnAuto?.addEventListener('click', function() {
+            if (autoPlayInterval) {
+                stopAutoPlay();
+            } else {
+                // Start auto-play
+                autoText.textContent = '⏸ Stop';
+                btnAuto.classList.add('playing');
+                
+                // Immediately advance one turn
+                advanceTurn();
+                
+                // Then continue every 300ms
+                autoPlayInterval = setInterval(async () => {
+                    const shouldContinue = await advanceTurn();
+                    if (!shouldContinue) {
+                        stopAutoPlay();
+                    }
+                }, 300);
+            }
+        });
+        
+        // Prevent form submission, use API instead
+        document.getElementById('next-form')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await advanceTurn();
+        });
+    </script>
 }
 else
 {

@@ -9,7 +9,7 @@ public interface IMappable
     /// <summary>
     /// Current position of the object on the map.
     /// </summary>
-    Point? Position { get; }
+    Point? Position { get; set; }
 
     /// <summary>
     /// Map on which the object is located.

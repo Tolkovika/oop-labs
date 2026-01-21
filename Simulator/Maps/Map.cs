@@ -33,6 +33,51 @@ public abstract class Map
         SizeY = sizeY;
         area = new Rectangle(0, 0, SizeX - 1, SizeY - 1);
     }
+    
+    // === CARROT STORAGE ===
+    private readonly Dictionary<Point, int> _carrots = new();
+    
+    /// <summary>
+    /// Get number of carrots at a position.
+    /// </summary>
+    public int GetCarrots(Point pos) => _carrots.TryGetValue(pos, out var c) ? c : 0;
+    
+    /// <summary>
+    /// Get number of carrots at coordinates.
+    /// </summary>
+    public int GetCarrots(int x, int y) => GetCarrots(new Point(x, y));
+    
+    /// <summary>
+    /// Set number of carrots at a position.
+    /// </summary>
+    public void SetCarrots(Point pos, int count)
+    {
+        if (count <= 0)
+            _carrots.Remove(pos);
+        else
+            _carrots[pos] = count;
+    }
+    
+    /// <summary>
+    /// Add carrots at a position.
+    /// </summary>
+    public void AddCarrots(Point pos, int amount = 1) => SetCarrots(pos, GetCarrots(pos) + amount);
+
+    // === NEW RESOURCES STORAGE ===
+    private readonly Dictionary<Point, int> _feathers = new();
+    private readonly Dictionary<Point, int> _dust = new();
+    private readonly Dictionary<Point, int> _footprints = new();
+
+    public int GetFeathers(Point pos) => _feathers.TryGetValue(pos, out var v) ? v : 0;
+    public void AddFeathers(Point pos, int amount = 1) => _feathers[pos] = GetFeathers(pos) + amount;
+
+    public int GetDust(Point pos) => _dust.TryGetValue(pos, out var v) ? v : 0;
+    public void AddDust(Point pos, int amount = 1) => _dust[pos] = GetDust(pos) + amount;
+    public void SetDust(Point pos, int count) { if (count <= 0) _dust.Remove(pos); else _dust[pos] = count; }
+
+    public int GetFootprints(Point pos) => _footprints.TryGetValue(pos, out var v) ? v : 0;
+    public void AddFootprints(Point pos, int amount = 1) => _footprints[pos] = GetFootprints(pos) + amount;
+    public void SetFootprints(Point pos, int count) { if (count <= 0) _footprints.Remove(pos); else _footprints[pos] = count; }
 
     /// <summary>
     /// Check if given point belongs to the map.

@@ -40,7 +40,7 @@ public abstract class Creature : IMappable
     /// <summary>
     /// Current position of the creature on the map. Null if creature hasn't been placed on a map yet.
     /// </summary>
-    public Point? Position { get; private set; }
+    public Point? Position { get; set; }
 
     /// <summary>
     /// Constructor for Creature

@@ -126,13 +126,98 @@ public class Simulation
         // Parse to Direction (returns empty array for invalid chars)
         Direction[] parsedDirections = DirectionParser.Parse(moveChar.ToString());
         
+        // Track position before move
+        var oldPosition = CurrentMappable.Position;
+        
         // Execute move if valid
         if (parsedDirections.Length > 0)
         {
+            var unit = CurrentMappable;
+
+            // === OSTRICH PANIC LOGIC ===
+            // Before regular move
+            if (unit is Birds bird && bird.IsOstrich)
+            {
+                var orcNear = Mappables.OfType<Orc>().Any(o => o.Position != null && o.Position.Value.DistanceTo(unit.Position.Value) <= 2);
+                if (orcNear)
+                {
+                    // Panic sprint: diagonal move
+                    var randomDir = (Direction)(new Random().Next(4));
+                    var sprintPos = Map.NextDiagonal(unit.Position.Value, randomDir);
+                    
+                    if (!sprintPos.Equals(unit.Position.Value))
+                    {
+                        Map.Move(unit, unit.Position.Value, sprintPos);
+                        unit.Position = sprintPos;
+                        Map.AddDust(oldPosition.Value, 3);
+                        // No further move this turn
+                        goto PostMove;
+                    }
+                }
+            }
+
+            // Normal move
             Direction direction = parsedDirections[0];
             CurrentMappable.Go(direction);
         }
-        // Invalid moves are simply skipped (no else needed)
+        
+    PostMove:
+        var currentUnit = CurrentMappable;
+        var currentPos = currentUnit.Position;
+
+        // === CARROT DROP LOGIC ===
+        if (currentUnit is Animals animal && animal.IsRabbit && animal.Carrots > 0)
+        {
+            if (currentPos != null && !currentPos.Equals(oldPosition))
+            {
+                Map.AddCarrots(oldPosition.Value);
+                animal.Carrots--;
+            }
+        }
+        
+        // === CARROT PICKUP LOGIC ===
+        if (currentUnit is Elf elf && currentPos != null)
+        {
+            int carrots = Map.GetCarrots(currentPos.Value);
+            if (carrots > 0)
+            {
+                elf.CarrotsCarried += carrots;
+                Map.SetCarrots(currentPos.Value, 0);
+            }
+        }
+
+        // === EAGLE SWOOP LOGIC ===
+        if (currentUnit is Birds e && e.IsEagle && currentPos != null)
+        {
+            var victim = Mappables.OfType<Animals>()
+                .FirstOrDefault(a => a.IsRabbit && a.Position != null && a.Position.Value.DistanceTo(currentPos.Value) <= 2);
+            
+            if (victim != null)
+            {
+                Map.Remove(victim, victim.Position.Value);
+                victim.Position = null; // Mark as removed
+                Map.AddFeathers(currentPos.Value);
+            }
+        }
+
+        // === ORC RAID LOGIC ===
+        if (currentUnit is Orc o && currentPos != null)
+        {
+            Map.AddFootprints(currentPos.Value);
+            
+            var target = Mappables.OfType<Elf>()
+                .FirstOrDefault(e => e.Position != null && e.Position.Value.IsAdjacent(currentPos.Value));
+            
+            if (target != null && target.CarrotsCarried > 0)
+            {
+                // In Simulator we don't have easy access to TurnIndex/DayNight cycle here without adding it
+                // Assume 50% chance for now or check if we can add CurrentTurn
+                if (new Random().Next(100) < 40)
+                {
+                    target.CarrotsCarried--;
+                }
+            }
+        }
         
         // Advance to next move
         _currentMoveIndex++;

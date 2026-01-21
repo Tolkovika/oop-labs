@@ -25,4 +25,18 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 
+// API endpoint for auto-play
+app.MapPost("/api/nextTurn", (SimWeb.Services.GameService gameService) =>
+{
+    gameService.EnsureInitialized();
+    var success = gameService.NextTurn();
+    return Results.Json(gameService.GetMapState());
+});
+
+app.MapGet("/api/state", (SimWeb.Services.GameService gameService) =>
+{
+    gameService.EnsureInitialized();
+    return Results.Json(gameService.GetMapState());
+});
+
 app.Run();

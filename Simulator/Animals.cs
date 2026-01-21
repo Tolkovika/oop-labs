@@ -31,12 +31,22 @@ public class Animals : IMappable
     /// <summary>
     /// Current position of the animal on the map.
     /// </summary>
-    public Point? Position { get; protected set; }
+    public Point? Position { get; set; }
 
     /// <summary>
     /// Symbol representing the animal on map visualization.
     /// </summary>
     public virtual char Symbol => 'A';
+    
+    /// <summary>
+    /// Number of carrots this animal is carrying (rabbits start with 10).
+    /// </summary>
+    public int Carrots { get; set; } = 10;
+    
+    /// <summary>
+    /// Returns true if this animal is a rabbit (based on Description).
+    /// </summary>
+    public bool IsRabbit => Description?.Contains("Rabbit", StringComparison.OrdinalIgnoreCase) == true;
 
     /// <summary>
     /// Initialize animal's map and position.

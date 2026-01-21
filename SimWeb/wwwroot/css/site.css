@@ -196,6 +196,80 @@ body {
     pointer-events: none;
 }
 
+/* Carrot Badge */
+.carrot-badge {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 15;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    padding: 2px;
+}
+
+.feather-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: linear-gradient(135deg, #e2e8f0, #94a3b8);
+    color: #1e293b;
+    font-size: 0.6rem;
+    font-weight: 700;
+    min-width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 16;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.dust-badge {
+    position: absolute;
+    bottom: 2px;
+    left: 2px;
+    background: linear-gradient(135deg, #cbd5e1, #64748b);
+    color: white;
+    font-size: 0.6rem;
+    font-weight: 700;
+    min-width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 14;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.footprints-badge {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    background: linear-gradient(135deg, #78350f, #451a03);
+    color: white;
+    font-size: 0.6rem;
+    font-weight: 700;
+    min-width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 14;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
 /* Unit Icons */
 .unit-icon {
     width: 85%;
@@ -353,6 +427,36 @@ body {
     background: var(--bg-primary);
     color: var(--text-primary);
     border-color: var(--accent-color);
+}
+
+/* Auto-Play Button */
+.btn-auto-play {
+    width: 100%;
+    padding: 0.7rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-bottom: 0.5rem;
+}
+
+.btn-auto-play:hover:not(:disabled) {
+    background: linear-gradient(135deg, #818cf8, #6366f1);
+    transform: translateY(-1px);
+}
+
+.btn-auto-play.playing {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.btn-auto-play:disabled {
+    background: var(--bg-tertiary);
+    color: var(--text-muted);
+    cursor: not-allowed;
 }
 
 /* Event Log */

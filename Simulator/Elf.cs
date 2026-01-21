@@ -65,6 +65,11 @@ public class Elf : Creature
     /// Symbol for map visualization.
     /// </summary>
     public override char Symbol => 'E';
+    
+    /// <summary>
+    /// Number of carrots this elf is carrying (collected from tiles).
+    /// </summary>
+    public int CarrotsCarried { get; set; } = 0;
 
     /// <summary>
     /// Info string in format: Name [Level][Agility]

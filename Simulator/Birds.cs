@@ -13,6 +13,9 @@ public class Birds : Animals
     /// </summary>
     public bool CanFly { get; set; } = true;
 
+    public bool IsEagle => Description?.Contains("Eagle", StringComparison.OrdinalIgnoreCase) == true;
+    public bool IsOstrich => Description?.Contains("Ostrich", StringComparison.OrdinalIgnoreCase) == true;
+
     /// <summary>
     /// Symbol for map visualization.
     /// Flying birds: B, non-flying birds: b

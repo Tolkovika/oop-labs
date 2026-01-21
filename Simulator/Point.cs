@@ -30,4 +30,7 @@ public readonly struct Point
             _ => this
         };
     }
+
+    public int DistanceTo(Point other) => Math.Max(Math.Abs(X - other.X), Math.Abs(Y - other.Y));
+    public bool IsAdjacent(Point other) => DistanceTo(other) == 1;
 }

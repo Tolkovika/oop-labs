@@ -6,8 +6,6 @@ using Simulator.Maps;
 
 namespace SimWeb.Pages;
 
-public record EventLogEntry(int Turn, string Message);
-
 public class SimulationModel : PageModel
 {
     private readonly GameService _gameService;
@@ -18,27 +16,19 @@ public class SimulationModel : PageModel
     }
 
     public Simulation? Simulation => _gameService.Simulation;
-
-    [BindProperty]
-    public int Turn { get; set; } = 1;
-    
-    public List<EventLogEntry> EventLog { get; set; } = new();
+    public int Turn => _gameService.CurrentTurn;
+    public List<string> EventLog => _gameService.EventLog;
+    public bool IsDay => Turn % 2 == 0;
 
     public IActionResult OnGet(bool reset = false)
     {
-        // Reset simulation if requested or not initialized
-        if (reset || Simulation == null || Simulation.Finished)
+        if (reset)
         {
             _gameService.Reset();
-            HttpContext.Session.SetInt32("Turn", 1);
-            HttpContext.Session.Remove("EventLog");
-            Turn = 1;
-            EventLog.Clear();
         }
         else
         {
-            Turn = HttpContext.Session.GetInt32("Turn") ?? 1;
-            LoadEventLog();
+            _gameService.EnsureInitialized();
         }
 
         return Page();
@@ -46,48 +36,14 @@ public class SimulationModel : PageModel
 
     public IActionResult OnPostNext()
     {
-        if (Simulation != null && !Simulation.Finished)
-        {
-            var currentMappable = Simulation.CurrentMappable.ToString();
-            var direction = GetDirectionName(Simulation.CurrentMoveName);
-            
-            Simulation.Turn();
-            
-            Turn = (HttpContext.Session.GetInt32("Turn") ?? 1) + 1;
-            HttpContext.Session.SetInt32("Turn", Turn);
-            
-            // Add to event log
-            AddEventLogEntry(Turn - 1, $"{currentMappable} → {direction}");
-        }
-
+        _gameService.EnsureInitialized();
+        _gameService.NextTurn();
         return RedirectToPage();
     }
     
     public IActionResult OnPostReset()
     {
         return RedirectToPage(new { reset = true });
-    }
-    
-    private void LoadEventLog()
-    {
-        var logJson = HttpContext.Session.GetString("EventLog");
-        if (!string.IsNullOrEmpty(logJson))
-        {
-            EventLog = System.Text.Json.JsonSerializer.Deserialize<List<EventLogEntry>>(logJson) ?? new();
-        }
-    }
-    
-    private void AddEventLogEntry(int turn, string message)
-    {
-        LoadEventLog();
-        EventLog.Add(new EventLogEntry(turn, message));
-        
-        // Keep last 20 entries
-        if (EventLog.Count > 20)
-            EventLog.RemoveAt(0);
-            
-        HttpContext.Session.SetString("EventLog", 
-            System.Text.Json.JsonSerializer.Serialize(EventLog));
     }
     
     public string GetImageSrc(IMappable mappable)
@@ -104,7 +60,6 @@ public class SimulationModel : PageModel
     
     public bool CanFly(IMappable mappable)
     {
-        // Flying birds (like Eagles) can fly over water
         if (mappable is Birds bird)
         {
             return bird.CanFly;

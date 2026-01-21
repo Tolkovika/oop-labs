@@ -43,7 +43,32 @@ public static class SimulationScenarios
             new(0, 5)   // Ostriches
         ];
         
-        string moves = "urdlurdlurdlurdlurdl"; // 20 moves
+        string moves = "urdlurdlurdlurdlurdlurdlurdlurdlurdlurdlurdlurdlurdlurdlurdlurdlurdlurdlurdlurdlurdlurdlurdlurdlurdl"; // 100 moves
+
+        return (map, mappables, points, moves);
+    }
+    public static (Map, List<IMappable>, List<Point>, string) GetSim3()
+    {
+        SmallSquareMap map = new(10);
+        List<IMappable> mappables =
+        [
+            new Birds { Description = "Eagle", Size = 5, CanFly = true },
+            new Animals { Description = "Rabbits", Size = 3 },
+            new Orc("Azog", 3, 5),
+            new Elf("Galadriel", 5, 8),
+            new Birds { Description = "Ostrich", Size = 4, CanFly = false }
+        ];
+        
+        List<Point> points =
+        [
+            new(1, 1),  // Eagle
+            new(2, 2),  // Rabbit (Eagle target)
+            new(5, 5),  // Orc
+            new(4, 5),  // Elf (Orc target)
+            new(6, 6)   // Ostrich (Panic when Orc moves)
+        ];
+        
+        string moves = "urdlurdlurdlurdlurdlurdlurdlurdlurdlurdlurdlurdlurdlurdlurdlurdlurdlurdl"; 
 
         return (map, mappables, points, moves);
     }
