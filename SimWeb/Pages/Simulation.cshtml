@@ -29,7 +29,11 @@
                                 }
                                 @if (carrots > 0)
                                 {
-                                    <div class="carrot-badge" title="🥕 @carrots">@carrots</div>
+                                    <img src="/images/carrot.png" class="carrot-icon" alt="Carrot" title="🥕 @carrots carrot(s)" />
+                                    @if (carrots > 1)
+                                    {
+                                        <div class="carrot-badge" title="🥕 @carrots">@carrots</div>
+                                    }
                                 }
                                 @if (feathers > 0)
                                 {
@@ -184,18 +188,18 @@
             
             // Clear all units and badges from cells
             cells.forEach(cell => {
-                cell.querySelectorAll('.unit-icon, .carrot-badge, .feather-badge, .dust-badge, .footprints-badge').forEach(u => u.remove());
+                cell.querySelectorAll('.unit-icon, .carrot-icon, .carrot-badge, .feather-badge, .dust-badge, .footprints-badge').forEach(u => u.remove());
             });
             
-            // Add units from data
+            // Add units and resources from data
             data.cells.forEach(cellData => {
-                if (cellData.units && cellData.units.length > 0) {
-                    // Find the cell element (cells are rendered Y descending)
-                    const cellIndex = (data.sizeY - 1 - cellData.y) * data.sizeX + cellData.x;
-                    const cell = cells[cellIndex];
-                    
-                    if (cell) {
-                        // Add units
+                // Find the cell element (cells are rendered Y descending)
+                const cellIndex = (data.sizeY - 1 - cellData.y) * data.sizeX + cellData.x;
+                const cell = cells[cellIndex];
+                
+                if (cell) {
+                    // Add units if any
+                    if (cellData.units && cellData.units.length > 0) {
                         cellData.units.forEach(unit => {
                             const img = document.createElement('img');
                             img.className = 'unit-icon';
@@ -211,13 +215,26 @@
                             
                             cell.appendChild(img);
                         });
-
-                        // Add resource badges
-                        if (cellData.carrots > 0) updateBadge(cell, 'carrot-badge', '🥕 ' + cellData.carrots, cellData.carrots);
-                        if (cellData.feathers > 0) updateBadge(cell, 'feather-badge', '🪶 ' + cellData.feathers, cellData.feathers);
-                        if (cellData.dust > 0) updateBadge(cell, 'dust-badge', '🌫️ ' + cellData.dust, cellData.dust);
-                        if (cellData.footprints > 0) updateBadge(cell, 'footprints-badge', '👣 ' + cellData.footprints, cellData.footprints);
                     }
+
+                    // Add resource badges/icons (for ALL cells, not just those with units)
+                    if (cellData.carrots > 0) {
+                        // Add carrot icon
+                        const carrotImg = document.createElement('img');
+                        carrotImg.src = '/images/carrot.png';
+                        carrotImg.className = 'carrot-icon';
+                        carrotImg.alt = 'Carrot';
+                        carrotImg.title = '🥕 ' + cellData.carrots + ' carrot(s)';
+                        cell.appendChild(carrotImg);
+                        
+                        // Add count badge if more than 1
+                        if (cellData.carrots > 1) {
+                            updateBadge(cell, 'carrot-badge', '🥕 ' + cellData.carrots, cellData.carrots);
+                        }
+                    }
+                    if (cellData.feathers > 0) updateBadge(cell, 'feather-badge', '🪶 ' + cellData.feathers, cellData.feathers);
+                    if (cellData.dust > 0) updateBadge(cell, 'dust-badge', '🌫️ ' + cellData.dust, cellData.dust);
+                    if (cellData.footprints > 0) updateBadge(cell, 'footprints-badge', '👣 ' + cellData.footprints, cellData.footprints);
                 }
             });
 

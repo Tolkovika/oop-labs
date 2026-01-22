@@ -79,9 +79,22 @@ public class CombatResolver
     
     private void ResolveSingleCombat(Unit unitA, Unit unitB, Tile tile, TimeOfDay time, GameMap map)
     {
+        // === LUCKY ESCAPE (Rabbits) ===
+        // 30% chance for rabbits to dodge combat completely
+        if (unitA is Animal animalA && animalA.IsRabbit && _random.Next(100) < 30)
+        {
+            // Rabbit A dodges!
+            return;
+        }
+        if (unitB is Animal animalB && animalB.IsRabbit && _random.Next(100) < 30)
+        {
+            // Rabbit B dodges!
+            return;
+        }
+        
         // Calculate power for both units
-        var (powerA, terrainBonusA, timeBonusA) = CalculatePowerDetailed(unitA, tile.Terrain, time);
-        var (powerB, terrainBonusB, timeBonusB) = CalculatePowerDetailed(unitB, tile.Terrain, time);
+        var (powerA, terrainBonusA, timeBonusA, allyBonusA) = CalculatePowerDetailed(unitA, tile.Terrain, time, map);
+        var (powerB, terrainBonusB, timeBonusB, allyBonusB) = CalculatePowerDetailed(unitB, tile.Terrain, time, map);
         
         // Determine attacker (higher initiative or random)
         bool aIsAttacker = powerA >= powerB;
@@ -97,11 +110,16 @@ public class CombatResolver
         // Apply result
         ApplyResult(result, attacker, defender, tile, map);
         
+        // Combine bonuses for logging
+        string terrainBonus = aIsAttacker ? terrainBonusA : terrainBonusB;
+        string timeBonus = aIsAttacker ? timeBonusA : timeBonusB;
+        string allyBonus = aIsAttacker ? allyBonusA : allyBonusB;
+        if (!string.IsNullOrEmpty(allyBonus)) timeBonus += (string.IsNullOrEmpty(timeBonus) ? "" : ", ") + allyBonus;
+        
         // Log combat event
         LastCombatEvents.Add(new CombatEvent(
             attacker, defender, attackerPower, defenderPower, result,
-            aIsAttacker ? terrainBonusA : terrainBonusB,
-            aIsAttacker ? timeBonusA : timeBonusB
+            terrainBonus, timeBonus
         ));
     }
     
@@ -195,16 +213,26 @@ public class CombatResolver
         tile.Units.Remove(unit);
     }
 
-    private (int power, string terrainBonus, string timeBonus) CalculatePowerDetailed(Unit unit, TerrainType terrain, TimeOfDay time)
+    private (int power, string terrainBonus, string timeBonus, string allyBonus) CalculatePowerDetailed(Unit unit, TerrainType terrain, TimeOfDay time, GameMap map)
     {
         int basePower = 5;
         string terrainBonus = "";
         string timeBonus = "";
+        string allyBonus = "";
         
         // === RACE BASE POWER ===
-        if (unit is Orc)
+        if (unit is Orc orc)
         {
             basePower = 7;
+            
+            // === PACK MENTALITY ===
+            // Orcs get +1 power for each adjacent allied Orc
+            int adjacentOrcs = CountAdjacentAllies<Orc>(orc, map);
+            if (adjacentOrcs > 0)
+            {
+                basePower += adjacentOrcs;
+                allyBonus = $"+{adjacentOrcs} Pack";
+            }
         }
         else if (unit is Elf)
         {
@@ -270,6 +298,29 @@ public class CombatResolver
             }
         }
         
-        return (Math.Max(1, basePower), terrainBonus, timeBonus);
+        return (Math.Max(1, basePower), terrainBonus, timeBonus, allyBonus);
+    }
+    
+    /// <summary>
+    /// Count adjacent allies of a specific type for pack bonuses.
+    /// </summary>
+    private int CountAdjacentAllies<T>(Unit unit, GameMap map) where T : Unit
+    {
+        if (map == null) return 0;
+        
+        int count = 0;
+        var directions = new[] { Direction.Up, Direction.Down, Direction.Left, Direction.Right };
+        
+        foreach (var dir in directions)
+        {
+            var adjacentPos = unit.Position.Next(dir);
+            if (map.IsValid(adjacentPos))
+            {
+                var tile = map.At(adjacentPos);
+                count += tile.Units.OfType<T>().Count(u => u != unit);
+            }
+        }
+        
+        return count;
     }
 }

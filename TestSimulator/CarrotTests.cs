@@ -71,10 +71,10 @@ public class CarrotTests
         // Act
         sim.Turn();
         
-        // Assert - rabbit moved to (3,2) and dropped a carrot there
+        // Assert - rabbit moved to (3,2) and dropped a carrot at OLD position (2,2)
         Assert.Equal(new Point(3, 2), rabbit.Position);
         Assert.Equal(initialCarrots - 1, rabbit.Carrots);
-        Assert.Equal(1, map.GetCarrots(new Point(3, 2)));
+        Assert.Equal(1, map.GetCarrots(new Point(2, 2))); // Carrot at OLD position
     }
     
     [Fact]

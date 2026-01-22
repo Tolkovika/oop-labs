@@ -9,8 +9,8 @@ def remove_white_background(image_path):
 
         newData = []
         for item in datas:
-            # Check if pixel is white-ish (tolerance of 10)
-            if item[0] > 245 and item[1] > 245 and item[2] > 245:
+            # Check if pixel is light gray/white (tolerance of > 180)
+            if item[0] > 180 and item[1] > 180 and item[2] > 180:
                 newData.append((255, 255, 255, 0))
             else:
                 newData.append(item)
@@ -28,7 +28,8 @@ files = [
     "SimWeb/wwwroot/images/bird.png",
     "SimWeb/wwwroot/images/rabbit.png",
     "SimWeb/wwwroot/images/elf_transparent.png",
-    "SimWeb/wwwroot/images/orc_transparent.png"
+    "SimWeb/wwwroot/images/orc_transparent.png",
+    "SimWeb/wwwroot/images/carrot.png"
 ]
 
 for f in files:

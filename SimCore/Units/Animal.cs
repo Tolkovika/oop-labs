@@ -13,6 +13,11 @@ public class Animal : Unit
     public int Carrots { get; set; } = 10;
     
     /// <summary>
+    /// Tracks turns since last spawn for rabbit multiplication.
+    /// </summary>
+    public int TurnsSinceSpawn { get; set; } = 0;
+    
+    /// <summary>
     /// Returns true if this animal is a rabbit (based on Name).
     /// </summary>
     public bool IsRabbit => Name?.Contains("Rabbit", StringComparison.OrdinalIgnoreCase) == true;

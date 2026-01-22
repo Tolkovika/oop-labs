@@ -54,6 +54,47 @@ public class Simulation
             HistoryLog.Add($"{icon} T{TurnIndex}: {CurrentTime} begins!");
         }
 
+        // === ARCHER'S ADVANTAGE (Elves) ===
+        // Before movement, elves can attack enemies within 2 tiles
+        foreach (var elf in Units.OfType<Elf>().ToList())
+        {
+            var target = Units.OfType<Unit>()
+                .Where(u => u != elf && !(u is Elf)) // Not self, not other elves
+                .Where(u => elf.Position.DistanceTo(u.Position) == 2) // Exactly 2 tiles away
+                .FirstOrDefault();
+            
+            if (target != null && _random.Next(100) < 50) // 50% hit chance at range
+            {
+                // Ranged attack hits!
+                Map.Remove(target, target.Position);
+                Units.Remove(target);
+                HistoryLog.Add($"🏹 T{TurnIndex}: {elf.Name} shot {target.Name} from distance!");
+            }
+        }
+
+        // === RABBIT MULTIPLICATION ===
+        // Every 10 turns, rabbits spawn a baby on adjacent tile
+        var newRabbits = new List<Animal>();
+        foreach (var rabbit in Units.OfType<Animal>().Where(a => a.IsRabbit).ToList())
+        {
+            rabbit.TurnsSinceSpawn++;
+            if (rabbit.TurnsSinceSpawn >= 10)
+            {
+                rabbit.TurnsSinceSpawn = 0;
+                var emptyTile = FindEmptyAdjacentTile(rabbit.Position);
+                if (emptyTile.HasValue)
+                {
+                    var babyRabbit = new Animal { Name = $"Baby{rabbit.Name.Replace("Rabbit", "")}" };
+                    babyRabbit.InitMap(Map, emptyTile.Value);
+                    babyRabbit.Carrots = 5; // Baby starts with fewer carrots
+                    Map.Place(babyRabbit, emptyTile.Value);
+                    newRabbits.Add(babyRabbit);
+                    HistoryLog.Add($"🐰 T{TurnIndex}: {rabbit.Name} had a baby at ({emptyTile.Value.X},{emptyTile.Value.Y})!");
+                }
+            }
+        }
+        foreach (var baby in newRabbits) Units.Add(baby);
+
         // Move all units and apply terrain effects
         var unitsToRemove = new List<IMovable>();
         
@@ -61,8 +102,26 @@ public class Simulation
         {
             if (unitsToRemove.Contains(unit)) continue;
             
-            // AI: Choose random direction
-            var direction = (Direction)_random.Next(4);
+            // === PREY DETECTION (Eagles) ===
+            // Eagles move toward nearest rabbit instead of random direction
+            Direction direction;
+            if (unit is Bird eagle && eagle.IsEagle)
+            {
+                var nearestRabbit = FindNearestRabbit(unit.Position);
+                if (nearestRabbit != null)
+                {
+                    direction = GetDirectionToward(unit.Position, nearestRabbit.Position);
+                }
+                else
+                {
+                    direction = (Direction)_random.Next(4);
+                }
+            }
+            else
+            {
+                // AI: Choose random direction
+                direction = (Direction)_random.Next(4);
+            }
             var oldPos = unit.Position;
 
             // === OSTRICH PANIC LOGIC ===
@@ -146,7 +205,7 @@ public class Simulation
                 }
 
                 // === EAGLE SWOOP LOGIC ===
-                if (moved && unit is Bird eagle && eagle.IsEagle)
+                if (moved && unit is Bird swoopingBird && swoopingBird.IsEagle)
                 {
                     // Search for rabbits in radius 2
                     var caught = Units.OfType<Animal>()
@@ -291,6 +350,57 @@ public class Simulation
         
         // Forest, Plain - normal entry
         return TerrainResult.CanEnter;
+    }
+    
+    /// <summary>
+    /// Find the nearest rabbit on the map from a given position.
+    /// </summary>
+    private Animal? FindNearestRabbit(Point from)
+    {
+        return Units.OfType<Animal>()
+            .Where(a => a.IsRabbit)
+            .OrderBy(a => a.Position.DistanceTo(from))
+            .FirstOrDefault();
+    }
+    
+    /// <summary>
+    /// Get the best direction to move from 'from' toward 'to'.
+    /// </summary>
+    private Direction GetDirectionToward(Point from, Point to)
+    {
+        int dx = to.X - from.X;
+        int dy = to.Y - from.Y;
+        
+        // Prefer the axis with greater distance
+        if (Math.Abs(dx) >= Math.Abs(dy))
+        {
+            return dx > 0 ? Direction.Right : Direction.Left;
+        }
+        else
+        {
+            return dy > 0 ? Direction.Up : Direction.Down;
+        }
+    }
+    
+    /// <summary>
+    /// Find an empty adjacent tile for spawning new units.
+    /// </summary>
+    private Point? FindEmptyAdjacentTile(Point origin)
+    {
+        var directions = new[] { Direction.Up, Direction.Right, Direction.Down, Direction.Left };
+        foreach (var dir in directions.OrderBy(_ => _random.Next()))
+        {
+            var pos = origin.Next(dir);
+            if (Map.IsValid(pos))
+            {
+                var tile = Map.At(pos);
+                if (tile.Units.Count == 0 && tile.Terrain != Terrain.TerrainType.River)
+                {
+                    return pos;
+                }
+            }
+        }
+        return null;
     }
 }
 

@@ -128,40 +128,120 @@ public class Simulation
         
         // Track position before move
         var oldPosition = CurrentMappable.Position;
+        bool movedAI = false;
         
-        // Execute move if valid
-        if (parsedDirections.Length > 0)
-        {
-            var unit = CurrentMappable;
+        // === AI BEHAVIORS ===
+        var unit = CurrentMappable;
 
-            // === OSTRICH PANIC LOGIC ===
-            // Before regular move
-            if (unit is Birds bird && bird.IsOstrich)
+        // === RABBIT MULTIPLICATION ===
+        // Every 5 rabbit turns, spawn a baby on adjacent tile
+        if (unit is Animals rabbit && rabbit.IsRabbit && rabbit.Position != null)
+        {
+            rabbit.TurnsSinceSpawn++;
+            if (rabbit.TurnsSinceSpawn >= 3) // Accelerated breeding (3 turns)
             {
-                var orcNear = Mappables.OfType<Orc>().Any(o => o.Position != null && o.Position.Value.DistanceTo(unit.Position.Value) <= 2);
-                if (orcNear)
+                rabbit.TurnsSinceSpawn = 0;
+                var emptyTile = FindEmptyAdjacentTile(rabbit.Position.Value);
+                if (emptyTile != null)
                 {
-                    // Panic sprint: diagonal move
-                    var randomDir = (Direction)(new Random().Next(4));
-                    var sprintPos = Map.NextDiagonal(unit.Position.Value, randomDir);
-                    
-                    if (!sprintPos.Equals(unit.Position.Value))
-                    {
-                        Map.Move(unit, unit.Position.Value, sprintPos);
-                        unit.Position = sprintPos;
-                        Map.AddDust(oldPosition.Value, 3);
-                        // No further move this turn
-                        goto PostMove;
-                    }
+                    var babyRabbit = new Animals { Description = $"BabyRabbit", Size = 3 };
+                    babyRabbit.Carrots = 5;
+                    babyRabbit.InitMapAndPosition(Map, emptyTile.Value);
+                    Mappables.Add(babyRabbit);
                 }
             }
+        }
 
-            // Normal move
-            Direction direction = parsedDirections[0];
-            CurrentMappable.Go(direction);
+        // 1. OSTRICH PANIC
+        if (unit is Birds bird && bird.IsOstrich)
+        {
+            var orcNear = Mappables.OfType<Orc>().Any(o => o.Position != null && o.Position.Value.DistanceTo(unit.Position.Value) <= 2);
+            if (orcNear)
+            {
+                var randomDir = (Direction)(new Random().Next(4));
+                var sprintPos = Map.NextDiagonal(unit.Position.Value, randomDir);
+                
+                if (!sprintPos.Equals(unit.Position.Value))
+                {
+                    Map.Move(unit, unit.Position.Value, sprintPos);
+                    unit.Position = sprintPos;
+                    // Map.AddDust(oldPosition.Value, 3);
+                    movedAI = true;
+                }
+            }
+        }
+
+        // 2. ELF SEEK CARROTS (Global Search)
+        if (!movedAI && unit is Elf seekingElf && unit.Position != null)
+        {
+             // Find nearest carrot globally
+             Point? bestCarrot = null;
+             double bestDist = double.MaxValue;
+
+             for (int x = 0; x < Map.SizeX; x++)
+             {
+                 for (int y = 0; y < Map.SizeY; y++)
+                 {
+                     var p = new Point(x, y);
+                     if (Map.GetCarrots(p) > 0)
+                     {
+                         // Use simple coordinate distance for seeking
+                        int dx = x - unit.Position.Value.X;
+                        int dy = y - unit.Position.Value.Y;
+                        double d = Math.Sqrt(dx*dx + dy*dy);
+                        
+                         if (d < bestDist)
+                         {
+                             bestDist = d;
+                             bestCarrot = p;
+                         }
+                     }
+                 }
+             }
+
+             if (bestCarrot != null)
+             {
+                 var dirToCarrot = GetDirectionToward(unit.Position.Value, bestCarrot.Value);
+                 var nextPos = Map.Next(unit.Position.Value, dirToCarrot);
+                 
+                 // Move if feasible
+                 if (!nextPos.Equals(unit.Position.Value))
+                 {
+                     Map.Move(unit, unit.Position.Value, nextPos);
+                     unit.Position = nextPos;
+                     movedAI = true;
+                 }
+             }
+        }
+
+        // 3. EAGLE HUNT
+        if (!movedAI && unit is Birds eagle && eagle.IsEagle && unit.Position != null)
+        {
+             var nearestRabbit = Mappables.OfType<Animals>()
+                .Where(a => a.IsRabbit && a.Position != null)
+                .OrderBy(a => a.Position!.Value.DistanceTo(unit.Position.Value))
+                .FirstOrDefault();
+            
+            if (nearestRabbit != null)
+            {
+                var dirToRabbit = GetDirectionToward(unit.Position.Value, nearestRabbit.Position!.Value);
+                var nextPos = Map.Next(unit.Position.Value, dirToRabbit);
+                if (!nextPos.Equals(unit.Position.Value))
+                {
+                    Map.Move(unit, unit.Position.Value, nextPos);
+                    unit.Position = nextPos;
+                    movedAI = true;
+                }
+            }
+        }
+
+        // === STANDARD MOVE ===
+        if (!movedAI && parsedDirections.Length > 0)
+        {
+            CurrentMappable.Go(parsedDirections[0]);
         }
         
-    PostMove:
+    // PostMove logic
         var currentUnit = CurrentMappable;
         var currentPos = currentUnit.Position;
 
@@ -196,22 +276,20 @@ public class Simulation
             {
                 Map.Remove(victim, victim.Position.Value);
                 victim.Position = null; // Mark as removed
-                Map.AddFeathers(currentPos.Value);
+                // Map.AddFeathers(currentPos.Value);
             }
         }
 
         // === ORC RAID LOGIC ===
         if (currentUnit is Orc o && currentPos != null)
         {
-            Map.AddFootprints(currentPos.Value);
+             // Footprints removed
             
             var target = Mappables.OfType<Elf>()
                 .FirstOrDefault(e => e.Position != null && e.Position.Value.IsAdjacent(currentPos.Value));
             
             if (target != null && target.CarrotsCarried > 0)
             {
-                // In Simulator we don't have easy access to TurnIndex/DayNight cycle here without adding it
-                // Assume 50% chance for now or check if we can add CurrentTurn
                 if (new Random().Next(100) < 40)
                 {
                     target.CarrotsCarried--;
@@ -226,6 +304,42 @@ public class Simulation
         if (_currentMoveIndex >= Moves.Length)
         {
             Finished = true;
+        }
+    }
+    
+    /// <summary>
+    /// Find an empty adjacent tile for spawning new units.
+    /// </summary>
+    private Point? FindEmptyAdjacentTile(Point origin)
+    {
+        var directions = new[] { Direction.Up, Direction.Right, Direction.Down, Direction.Left };
+        var rand = new Random();
+        foreach (var dir in directions.OrderBy(_ => rand.Next()))
+        {
+            var pos = Map.Next(origin, dir);
+            if (!pos.Equals(origin) && Map.At(pos.X, pos.Y).Count == 0)
+            {
+                return pos;
+            }
+        }
+        return null;
+    }
+    
+    /// <summary>
+    /// Get the best direction to move from 'from' toward 'to'.
+    /// </summary>
+    private Direction GetDirectionToward(Point from, Point to)
+    {
+        int dx = to.X - from.X;
+        int dy = to.Y - from.Y;
+        
+        if (Math.Abs(dx) >= Math.Abs(dy))
+        {
+            return dx > 0 ? Direction.Right : Direction.Left;
+        }
+        else
+        {
+            return dy > 0 ? Direction.Up : Direction.Down;
         }
     }
 }
